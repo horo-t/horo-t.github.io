@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<title>Load TIFF image using ServiceWorker and emscripten</title>
+<body>
+<script>
+function register() {
+  navigator.serviceWorker.register("./tiff2bmpsw.js",
+                                   {scope: "./"})
+    .then(function(e) {
+        alert("ServiceWorker registration succeeded.");
+        location.reload();
+      })
+    .catch(function(e) {
+        alert("ServiceWorker registration error.");
+        console.log(e);
+      });
+}
+</script>
+<h1>Load TIFF image using ServiceWorker and emscripten</h1>
+<input type="button" onclick="register()" value="Please click">
+<br>
+<img src="cherry_blossom.tif">
+</body>
