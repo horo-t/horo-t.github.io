@@ -1,0 +1,2 @@
+// SyntaxError
+console.log('hello'
