@@ -1,6 +1,6 @@
 <script>
 function register() {
-  navigator.serviceWorker.register("./sw.js", {scope: "./"})
+  navigator.serviceWorker.register("./sw.js", {scope: "./test"})
     .then(function(e) {
         alert("OK. Click test");
       })
