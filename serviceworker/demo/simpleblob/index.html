@@ -1,11 +1,13 @@
 <script>
 function register() {
   navigator.serviceWorker.register("./sw.js", {scope: "./test"})
-    .then(function(e) {
+    .then(function(registration) {
         alert("OK. Click test");
+        console.log(registration);
       })
-    .catch(function(e) {
+    .catch(function(error) {
         alert("error");
+        console.log(error);
       });
 }
 </script>
