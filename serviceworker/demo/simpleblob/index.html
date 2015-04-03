@@ -1,6 +1,6 @@
 <script>
 function register() {
-  navigator.serviceWorker.register("./sw.js", {scope: "./test"})
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
     .then(function(registration) {
         alert("OK. Click test");
         console.log(registration);
@@ -12,4 +12,4 @@ function register() {
 }
 </script>
 <input type="button" onclick="register()" value="Click this">
-<a href="test">test</a>
+<a href="./scope/test">test</a>
