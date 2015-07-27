@@ -10,6 +10,13 @@ function register() {
         console.log(error);
       });
 }
+function addIframe() {
+  var iframe = document.createElement("iframe");
+  iframe.src = "./scope/test";
+  document.body.appendChild(iframe);
+}
 </script>
-<input type="button" onclick="register()" value="Click this">
-<a href="./scope/test">test</a>
+<input type="button" onclick="register()" value="register">
+<a href="./scope/test">link</a>
+<a href="./scope/test" target="_blank">link(target=_blank)</a>
+<input type="button" onclick="addIframe()" value="add iframe">
