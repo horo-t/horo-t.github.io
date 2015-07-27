@@ -2,7 +2,7 @@
 function register() {
   navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
     .then(function(registration) {
-        alert("OK. Click test");
+        alert("OK.");
         console.log(registration);
       })
     .catch(function(error) {
