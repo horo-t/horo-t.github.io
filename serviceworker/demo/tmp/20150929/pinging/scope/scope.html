@@ -2,10 +2,17 @@
 var i = 0;
 function pinging() {
   ++i;
-  document.getElementById("disp").innerText=i;
-  fetch("test");
+  document.getElementById("disp").innerText="fetching" + i;
+  fetch("test")
+   .then(function(){
+     document.getElementById("result").innerText="OK: " + i;
+   })
+   .catch(function(){
+     document.getElementById("result").innerText="NG: " + i;
+   })
   setTimeout(pinging, 1000);
 }
 setTimeout(pinging, 1000);
 </script>
 <div id="disp"></div>
+<div id="result"></div>
