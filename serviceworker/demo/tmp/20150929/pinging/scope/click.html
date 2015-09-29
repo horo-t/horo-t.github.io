@@ -1,0 +1,17 @@
+<script>
+var i = 0;
+function ping() {
+  ++i;
+  document.getElementById("disp").innerText="fetching" + i;
+  fetch("test")
+   .then(function(){
+     document.getElementById("result").innerText="OK: " + i;
+   })
+   .catch(function(){
+     document.getElementById("result").innerText="NG: " + i;
+   })
+}
+</script>
+<button onClick="ping()">ping</button>
+<div id="disp"></div>
+<div id="result"></div>
