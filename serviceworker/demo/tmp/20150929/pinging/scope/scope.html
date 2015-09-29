@@ -1,0 +1,11 @@
+<script>
+var i = 0;
+function pinging() {
+  ++i;
+  document.getElementById("disp").innerText=i;
+  fetch("test");
+  setTimeout(pinging, 1000);
+}
+setTimeout(pinging, 1000);
+</script>
+<div id="disp"></div>
