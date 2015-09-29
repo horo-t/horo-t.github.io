@@ -1,4 +1,4 @@
-importScripts("imported.sw");
+importScripts("imported_sw.js");
 console.log("sw.js");
 self.addEventListener('fetch', function(event) {
     if (event.request.url.indexOf('test') != -1) {
