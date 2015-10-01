@@ -1,0 +1,21 @@
+<script>
+var i = 0;
+function ping() {
+  ++i;
+  document.getElementById("disp").innerText="fetching" + i;
+  fetch(document.getElementById("filename").value)
+   .then(function(res){
+     document.getElementById("result").innerText="OK: " + i;
+     res.text().then(function(t){
+       document.getElementById("result").innerText="OK: " + i + " " + t;
+     });
+   })
+   .catch(function(){
+     document.getElementById("result").innerText="NG: " + i;
+   })
+}
+</script>
+<input type="text" id="filename" value="test">
+<button onClick="ping()">ping</button>
+<div id="disp"></div>
+<div id="result"></div>

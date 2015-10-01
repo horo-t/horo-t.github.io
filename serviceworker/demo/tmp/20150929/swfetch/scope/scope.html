@@ -1,0 +1,21 @@
+<script>
+var i = 0;
+function pinging() {
+  ++i;
+  document.getElementById("disp").innerText="fetching" + i;
+  fetch("test")
+   .then(function(res){
+     document.getElementById("result").innerText="OK: " + i;
+     res.text().then(function(t){
+       document.getElementById("result").innerText="OK: " + i + " " + t;
+     });
+   })
+   .catch(function(){
+     document.getElementById("result").innerText="NG: " + i;
+   })
+  setTimeout(pinging, 1000);
+}
+setTimeout(pinging, 1000);
+</script>
+<div id="disp"></div>
+<div id="result"></div>
