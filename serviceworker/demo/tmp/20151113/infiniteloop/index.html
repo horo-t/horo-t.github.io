@@ -1,0 +1,19 @@
+<script>
+function infiniteloop() {
+  while(1){};
+}
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+</script>
+<input type="button" onclick="register()" value="register SW">
+<input type="button" onclick="infiniteloop()" value="infinite loop">
+<a href="./scope/test">test</a>
