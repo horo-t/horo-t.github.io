@@ -1,0 +1,8 @@
+<script>
+function beacon() {
+  navigator.sendBeacon("./beacon");
+}
+
+window.addEventListener('unload', beacon, false);
+</script>
+<input type="button" onclick="beacon()" value="beacon">
