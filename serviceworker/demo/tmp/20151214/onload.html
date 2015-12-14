@@ -1,0 +1,18 @@
+<html>
+<script>
+window.addEventListener("load", function(){
+  var ua = navigator.userAgent.toLowerCase();
+  var isWebView = /android/.test(ua) && /version/.test(ua) && /chrome/.test(ua);
+  if (isWebView) {
+    if (/^https/.test(location.href)) {
+      location.href = location.href.replace("https", "http");
+    } else {
+      location.href = location.href.replace("http", "https");
+    }
+  }
+}, false);
+</script>
+<body>
+
+</body>
+</html>
