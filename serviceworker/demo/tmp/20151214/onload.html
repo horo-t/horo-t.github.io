@@ -11,9 +11,9 @@ window.addEventListener("load", function(){
   var isWebView = /android/.test(ua) && /version/.test(ua) && /chrome/.test(ua);
   if (isWebView) {
     if (/^https/.test(location.href)) {
-      location.href = "https://locchat.com"
+      location.href = "http://locchat.com"
     } else {
-      location.href = "http://locchat.com";
+      location.href = "https://locchat.com";
     }
   }
 }, false);
