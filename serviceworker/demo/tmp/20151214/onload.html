@@ -1,5 +1,11 @@
 <html>
 <script>
+window.addEventListener("DOMContentLoaded", function(){
+  var div = document.createElement("div");
+  div.innerText = location.href;
+  document.body.appendChild(div);
+}, false);
+
 window.addEventListener("load", function(){
   var ua = navigator.userAgent.toLowerCase();
   var isWebView = /android/.test(ua) && /version/.test(ua) && /chrome/.test(ua);
@@ -13,6 +19,9 @@ window.addEventListener("load", function(){
 }, false);
 </script>
 <body>
+<script>
+document.createElement()
+</script>
 
 </body>
 </html>
