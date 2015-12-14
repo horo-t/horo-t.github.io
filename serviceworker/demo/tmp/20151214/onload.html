@@ -1,9 +1,16 @@
 <html>
 <script>
-window.addEventListener("DOMContentLoaded", function(){
+function log(txt) {
   var div = document.createElement("div");
-  div.innerText = location.href;
+  div.innerText = txt;
   document.body.appendChild(div);
+}
+window.addEventListener("DOMContentLoaded", function(){
+  log(location.href);
+  var ua = navigator.userAgent.toLowerCase();
+  var isWebView = /android/.test(ua) && /version/.test(ua) && /chrome/.test(ua);
+  log(ua);
+  log(isWebView);
 }, false);
 
 window.addEventListener("load", function(){
