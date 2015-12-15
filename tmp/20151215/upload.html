@@ -1,0 +1,97 @@
+<html>
+<script>
+var UPLOAD_INFO_CACHE_NAME = 'upload_info';
+var UPLOAD_DATA_CACHE_NAME = 'upload_data';
+function log(txt) {
+  var div = document.createElement("div");
+  div.innerText = txt;
+  document.body.appendChild(div);
+}
+window.addEventListener("load", function(){
+  document.getElementById('btn').addEventListener("click", function(){
+    var file = document.getElementById('camera-input').files[0];
+    var fr = new FileReader();
+    fr.onload = (function(e) {
+      var arrayBuffer = e.target.result;
+      var id = '/' + Math.random();
+      var fileinfo = {name: file.name, size: file.size, type: file.type, id: id};
+      var upload_info_name = "/upload_info/" + id;
+      var upload_data_name = "/upload_data/" + id;
+      Promise.all([
+        caches.open(UPLOAD_INFO_CACHE_NAME)
+          .then(function(cache) {
+              cache.put(new Request(id),
+                        new Response(JSON.stringify(fileinfo)))
+          }),
+        caches.open(UPLOAD_DATA_CACHE_NAME)
+          .then(function(cache) {
+              cache.put(new Request(id),
+                        new Response(arrayBuffer))
+          })])
+        .then(function() {
+          console.log("ok");
+            })
+        .catch(function(e) {
+          console.error(e);
+            })
+    }).bind(this);
+    fr.readAsArrayBuffer(file);
+  }, false);
+
+function getPendingRequests() {
+  return new Promise(function(resolve) {
+    var info_jsons;
+    caches.open(UPLOAD_INFO_CACHE_NAME)
+      .then(function(info_cache) {
+          return info_cache.matchAll();
+        })
+      .then(function(data_responses) {
+          return Promise.all(data_responses.map(function(response) {
+            return response.json();
+          }));
+        })
+      .then(function(jsons) {
+          info_jsons = jsons;
+          return caches.open(UPLOAD_DATA_CACHE_NAME)
+            .then(function(data_cache) {
+                return Promise.all(jsons.map(function(json) {
+                  return data_cache.match(json.id);
+                }));
+              });
+        })
+      .then(function(responses) {
+          return Promise.all(responses.map(function(response) {
+              return response.blob();
+            }));
+        })
+      .then(function(blobs) {
+          var pendingRequests = [];
+          for (var i = 0; i < blobs.length; ++i) {
+            var info = info_jsons[i];
+            var file = new File([blobs[i]], info.name, {type: info.type});
+            pendingRequests.push({file:file, info:info});
+          }
+          resolve(pendingRequests);
+        })
+      .catch(function(e) {
+          console.error(e);
+          Promise.all([caches.delete(UPLOAD_INFO_CACHE_NAME), caches.delete(UPLOAD_DATA_CACHE_NAME)])
+            .then(function(){resolve([]);}, function(){resolve([]);});
+        })
+  });
+}
+  document.getElementById('check').addEventListener("click", function(){
+    getPendingRequests()
+     .then(function(requests) {
+       console.log(requests);
+     })
+  }, false);
+}, false);
+</script>
+<body>
+<input id="camera-input" type="file" accept="image/jpeg, image/gif, image/png" name="files[]">
+<input id="btn" type="button" value="submit">
+<input id="check" type="button" value="check">
+
+</body>
+</html>
