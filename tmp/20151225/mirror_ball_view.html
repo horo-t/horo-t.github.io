@@ -231,10 +231,10 @@ function init() {
       view.initialize(img);
       return;
     }
-		var c = document.createElement('canvas');
-		c.width = nearestPowOfTwo(img.width);
-		c.height = nearestPowOfTwo(img.height);
-		c.getContext( '2d' ).drawImage(img, 0, 0, c.width, c.height);
+    var c = document.createElement('canvas');
+    c.width = nearestPowOfTwo(img.width);
+    c.height = nearestPowOfTwo(img.height);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
     view = new MirrorView();
     view.initialize(c);
   }).bind(this),false);
