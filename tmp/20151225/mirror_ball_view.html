@@ -344,9 +344,9 @@ void main() {
   vec3 input_vector = vec3(-1.0, v.y, v.x);
   vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
   vec3 result = rotateZ(camLatSin, camLatCos, reflect_vector);
-  float lon = atan(result.z, result.x);
+  float lon = - atan(result.z, result.x);
   float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
-  gl_FragColor = texture2D(texture, vec2((lon  / PI2) - camLon, lat / PI + 0.5));
+  gl_FragColor = texture2D(texture, vec2((lon  / PI2) + camLon, lat / PI + 0.5));
 }
 // ]]></script>
 </head>
