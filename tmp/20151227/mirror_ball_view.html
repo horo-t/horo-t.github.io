@@ -535,7 +535,7 @@ void main() {
 <script id="fragment-shader-for-frame-buffer" type="x-shader/x-fragment">// <![CDATA[
 #define PI 3.1415925358979
 #define PI2 6.2831850718
-precision mediump float;
+precision highp float;
 uniform vec3 inputVector;
 uniform vec2 frameBufferSize;
 uniform float cosPointSize;
@@ -550,7 +550,7 @@ vec3 rotateZ(float s, float c, vec3 p){
   return vec3(c * p.x + s * p.y, -s * p.x+ c * p.y, p.z);
 }
 
-void main() {
+void main() {/*
   float lon = (gl_FragCoord.x / frameBufferSize.x) * PI2;
   float lat = -(gl_FragCoord.y / frameBufferSize.y - 0.5) * PI;
   vec3 pos_vec = rotateY(sin(lon), cos(lon), rotateZ(sin(lat), cos(lat), vec3(1.0, 0.0, 0.0)));
@@ -558,7 +558,9 @@ void main() {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   } else  {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-  }
+  }*/
+
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
 // ]]></script>
 
