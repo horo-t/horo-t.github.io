@@ -152,7 +152,7 @@ MirrorView.prototype = {
     this._frameBufferSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'frameBufferSize');
     this._cosPointSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'cosPointSize');
 
-    this._frameBuffer = this._createFrameBuffer(1024, 1024);
+    this._frameBuffer = this._createFrameBuffer(4096, 2048);
 
     var fragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
     this._gl.shaderSource(fragmentShader, document.getElementById("fragment-shader").text);
@@ -571,7 +571,7 @@ float cosf(float x)
   return sinf(x+1.5708);
 }
 
-void main() {
+void main() {/*
   float lon = (gl_FragCoord.x / frameBufferSize.x) * PI2;
   float lat = -(gl_FragCoord.y / frameBufferSize.y - 0.5) * PI;
   vec3 pos_vec = rotateY(sinf(lon), cosf(lon), rotateZ(sinf(lat), cosf(lat), vec3(1.0, 0.0, 0.0)));
@@ -579,7 +579,8 @@ void main() {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   } else  {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-  }
+  }*/
+  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
 // ]]></script>
 
