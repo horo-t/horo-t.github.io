@@ -425,7 +425,7 @@ MirrorView.prototype = {
   },
   _onTouchEnd: function(event) {
     this._lastDrawPoint = undefined;
-    if (this._lastTouches.length == 1 && event.touches.length == 0) {
+    if (event.touches.length == 0) {
       this._mouseTracking = false;
     }
     this._updateLastTouches(event.touches);
