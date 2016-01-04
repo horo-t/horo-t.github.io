@@ -379,6 +379,7 @@ MirrorView.prototype = {
     if (this._mode != 'rotate') {
       if (this._lastTouches.length == 0 && event.touches.length == 1) {
         this._drawPoint(event.touches[0].clientX, event.touches[0].clientY - this._MENU_HEIGHT);
+        this._lastDrawPoint = {x:event.touches[0].clientX , y: event.touches[0].clientY - this._MENU_HEIGHT};
       } else {
         this._clearFrameBuffer();
       }
@@ -399,13 +400,26 @@ MirrorView.prototype = {
         this._lon = -diff.clientX * 0.2 + this._lon;
         this._lat = -diff.clientY * 0.2 + this._lat;
       } else {
-        this._drawPoint(event.touches[0].clientX, event.touches[0].clientY - this._MENU_HEIGHT);
+        if (!this._lastDrawPoint) {
+          this._drawPoint(event.touches[0].clientX, event.touches[0].clientY - this._MENU_HEIGHT);
+        } else {
+          var drawPoint = {x:event.touches[0].clientX , y: event.touches[0].clientY - this._MENU_HEIGHT};
+          var xDiff = Math.abs(drawPoint.x - this._lastDrawPoint.x);
+          var yDiff = Math.abs(drawPoint.y - this._lastDrawPoint.y);
+          var STEP_COUNT = Math.min(50, Math.max(xDiff, yDiff));
+          for (var i = 1; i <= STEP_COUNT; ++i) {
+            this._drawPoint((this._lastDrawPoint.x * (STEP_COUNT - i) + drawPoint.x * i) / STEP_COUNT,
+                            (this._lastDrawPoint.y * (STEP_COUNT - i) + drawPoint.y * i) / STEP_COUNT);
+          }
+        }
+        this._lastDrawPoint = {x:event.touches[0].clientX , y: event.touches[0].clientY - this._MENU_HEIGHT};
       }
       this._needsUpdate = true;
     }
     this._updateLastTouches(event.touches);
   },
   _onTouchEnd: function(event) {
+    this._lastDrawPoint = undefined;
     if (this._mode != 'rotate' && this._lastTouches.length == 1 && event.touches.length == 0) {
       this._clearFrameBuffer();
     }
