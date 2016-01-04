@@ -150,11 +150,11 @@ MirrorView.prototype = {
     this._gl.useProgram(this._programForFrameBuffer);
     this._inputVector_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'inputVector');
     this._frameBufferSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'frameBufferSize');
-    this._cosPointSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'cosPointSize');
+    this._pointSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'pointSize');
     this._cosTableTexture_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'cosTableTexture');
     this._cosTableTexture = this._createCosTableTexture(4096);
 
-    this._frameBuffer = this._createFrameBuffer(1024, 512);
+    this._frameBuffer = this._createFrameBuffer(4096, 2048);
 
     var fragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
     this._gl.shaderSource(fragmentShader, document.getElementById("fragment-shader").text);
@@ -254,7 +254,7 @@ MirrorView.prototype = {
   _drawPoint: function(x, y) {
     var poinrRotVec = this._getPointVector(x, y);
     if (this._mode == 'small-pt') {
-      this._drawFramebufferPoint(poinrRotVec, 0.03);
+      this._drawFramebufferPoint(poinrRotVec, 0.05);
     } else if (this._mode == 'medium-pt') {
       this._drawFramebufferPoint(poinrRotVec, 0.1);
     } else if (this._mode == 'large-pt') {
@@ -389,7 +389,7 @@ MirrorView.prototype = {
     this._gl.useProgram(this._programForFrameBuffer);
     this._gl.uniform3f(this._inputVector_loc, pointRotVector.x, pointRotVector.y, pointRotVector.z);
     this._gl.uniform2f(this._frameBufferSize_loc, this._frameBuffer.width, this._frameBuffer.height);
-    this._gl.uniform1f(this._cosPointSize_loc, Math.cos(size));
+    this._gl.uniform1f(this._pointSize_loc, size);
 
     this._gl.activeTexture(this._gl.TEXTURE0);
     this._gl.bindTexture(this._gl.TEXTURE_2D, this._cosTableTexture);
@@ -579,7 +579,7 @@ void main() {
 precision highp float;
 uniform vec3 inputVector;
 uniform vec2 frameBufferSize;
-uniform float cosPointSize;
+uniform float pointSize;
 
 uniform sampler2D cosTableTexture;
 
@@ -614,16 +614,15 @@ float cosf(float x)
 
 float cosX(float x) {
   float signValue = 1.0;
-  x = abs(x);
-  x /= PI;
+  x = abs(x) / PI;
   x = x - floor(x / 2.0) * 2.0;
-  if (x>1.0) x=2.0-x;
-  if (x>0.5) {
-    x=1.0-x;
-    signValue=-1.0;
+  if (x > 1.0) x = 2.0 - x;
+  if (x > 0.5) {
+    x = 1.0 - x;
+    signValue = -1.0;
   }
   if (x == 0.0) {
-    return 1.0;
+    return 0.0;//signValue;
   }
   vec4 cosColor = texture2D(cosTableTexture, vec2(x/0.5, 0.0));
   float value = cosColor.r +
@@ -638,7 +637,8 @@ void main() {
   float lon = (gl_FragCoord.x / frameBufferSize.x) * PI2;
   float lat = -(gl_FragCoord.y / frameBufferSize.y - 0.5) * PI;
   vec3 pos_vec = rotateY(sinX(lon), cosX(lon), rotateZ(sinX(lat), cosX(lat), vec3(1.0, 0.0, 0.0)));
-  if (dot(inputVector, pos_vec) > cosPointSize) {
+  if (dot(inputVector, pos_vec) > 0.0 &&
+      distance(pos_vec, inputVector) < pointSize) {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   } else  {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
