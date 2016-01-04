@@ -411,7 +411,7 @@ MirrorView.prototype = {
           var drawPoint = {x:event.touches[0].clientX , y: event.touches[0].clientY - this._MENU_HEIGHT};
           var xDiff = Math.abs(drawPoint.x - this._lastDrawPoint.x);
           var yDiff = Math.abs(drawPoint.y - this._lastDrawPoint.y);
-          var STEP_COUNT = Math.min(3, Math.max(xDiff, yDiff));
+          var STEP_COUNT = Math.min(8, Math.max(xDiff, yDiff));
           for (var i = 1; i <= STEP_COUNT; ++i) {
             this._drawPoint((this._lastDrawPoint.x * (STEP_COUNT - i) + drawPoint.x * i) / STEP_COUNT,
                             (this._lastDrawPoint.y * (STEP_COUNT - i) + drawPoint.y * i) / STEP_COUNT);
