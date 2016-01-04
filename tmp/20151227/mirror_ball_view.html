@@ -152,6 +152,8 @@ MirrorView.prototype = {
     this._frameBufferSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'frameBufferSize');
     this._cosPointSize_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'cosPointSize');
 
+    this._frameBuffer = this._createFrameBuffer(4096, 2048);
+    
     var fragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
     this._gl.shaderSource(fragmentShader, document.getElementById("fragment-shader").text);
     this._gl.compileShader(fragmentShader);
@@ -175,7 +177,7 @@ MirrorView.prototype = {
     this._texture1_loc = this._gl.getUniformLocation(this._program, 'texture1');
     this._dispSize_loc = this._gl.getUniformLocation(this._program, 'dispSize');
     this._gl.uniform2f(this._dispSize_loc, this._canvas.width, this._canvas.height);
-    this._frameBuffer = this._createFrameBuffer(1024, 1024);
+
 
   	this._render();
   },
@@ -550,17 +552,34 @@ vec3 rotateZ(float s, float c, vec3 p){
   return vec3(c * p.x + s * p.y, -s * p.x+ c * p.y, p.z);
 }
 
-void main() {/*
+float sinf(float x)
+{
+  x*=0.159155;
+  x-=floor(x);
+  float xx=x*x;
+  float y=-6.87897;
+  y=y*xx+33.7755;
+  y=y*xx-72.5257;
+  y=y*xx+80.5874;
+  y=y*xx-41.2408;
+  y=y*xx+6.28077;
+  return x*y;
+}
+
+float cosf(float x)
+{
+  return sinf(x+1.5708);
+}
+
+void main() {
   float lon = (gl_FragCoord.x / frameBufferSize.x) * PI2;
   float lat = -(gl_FragCoord.y / frameBufferSize.y - 0.5) * PI;
-  vec3 pos_vec = rotateY(sin(lon), cos(lon), rotateZ(sin(lat), cos(lat), vec3(1.0, 0.0, 0.0)));
+  vec3 pos_vec = rotateY(sinf(lon), cosf(lon), rotateZ(sinf(lat), cosf(lat), vec3(1.0, 0.0, 0.0)));
   if (dot(inputVector, pos_vec) > cosPointSize) {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   } else  {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-  }*/
-
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+  }
 }
 // ]]></script>
 
