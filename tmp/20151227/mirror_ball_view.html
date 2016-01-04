@@ -162,7 +162,7 @@ MirrorView.prototype = {
     this._yBase_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'yBase');
     this._cosTableTexture = this._createCosTableTexture(4096);
 
-    this._frameBuffer = this._createFrameBuffer(4096, 2048);
+    this._frameBuffer = this._createFrameBuffer(2048, 1024);
 
     var fragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
     this._gl.shaderSource(fragmentShader, document.getElementById("fragment-shader").text);
