@@ -639,7 +639,7 @@ float cosX(float x) {
     signValue = -1.0;
   }
   if (x == 0.0) {
-    return 0.0;//signValue;
+    return signValue;
   }
   vec4 cosColor = texture2D(cosTableTexture, vec2(x/0.5, 0.0));
   float value = cosColor.r +
