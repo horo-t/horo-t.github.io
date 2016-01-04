@@ -138,9 +138,6 @@ MirrorView.prototype = {
       this._gl.ARRAY_BUFFER,
       new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0,  1.0]),
       this._gl.STATIC_DRAW);
-    var vertexShader = this._gl.createShader(this._gl.VERTEX_SHADER);
-    this._gl.shaderSource(vertexShader, document.getElementById("vertex-shader").text);
-    this._gl.compileShader(vertexShader);
 
     var vertexShaderForFrameBuffer = this._gl.createShader(this._gl.VERTEX_SHADER);
     this._gl.shaderSource(vertexShaderForFrameBuffer, document.getElementById("vertex-shader-for-frame-buffer").text);
@@ -163,11 +160,15 @@ MirrorView.prototype = {
     this._cosTableTexture = this._createCosTableTexture(4096);
 
     this._frameBuffer = this._createFrameBuffer(2048, 1024);
+    this._frameBufferForEdit0 = this._createFrameBuffer(4096, 2048);
+    this._frameBufferForEdit1 = this._createFrameBuffer(4096, 2048);
 
+    var vertexShader = this._gl.createShader(this._gl.VERTEX_SHADER);
+    this._gl.shaderSource(vertexShader, document.getElementById("vertex-shader").text);
+    this._gl.compileShader(vertexShader);
     var fragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
     this._gl.shaderSource(fragmentShader, document.getElementById("fragment-shader").text);
     this._gl.compileShader(fragmentShader);
-
     this._program = this._gl.createProgram();
     this._gl.attachShader(this._program, vertexShader);
     this._gl.attachShader(this._program, fragmentShader);
@@ -188,6 +189,19 @@ MirrorView.prototype = {
     this._dispSize_loc = this._gl.getUniformLocation(this._program, 'dispSize');
     this._gl.uniform2f(this._dispSize_loc, this._canvas.width, this._canvas.height);
 
+    var blurFragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
+    this._gl.shaderSource(blurFragmentShader, document.getElementById("blur-fragment-shader").text);
+    this._gl.compileShader(blurFragmentShader);
+    this._blurProgram = this._gl.createProgram();
+    vertexShader = this._gl.createShader(this._gl.VERTEX_SHADER);
+    this._gl.shaderSource(vertexShader, document.getElementById("vertex-shader").text);
+    this._gl.compileShader(vertexShader);
+    this._gl.attachShader(this._blurProgram, vertexShader);
+    this._gl.attachShader(this._blurProgram, blurFragmentShader);
+    this._gl.linkProgram(this._blurProgram);
+    this._gl.useProgram(this._blurProgram);
+    this._blurFrameBufferSize_loc = this._gl.getUniformLocation(this._blurProgram, 'blurFrameBufferSize');
+    this._gl.uniform2f(this._blurFrameBufferSize_loc, this._frameBufferForEdit0.width, this._frameBufferForEdit0.height);
 
   	this._render();
   },
@@ -277,6 +291,7 @@ MirrorView.prototype = {
   },
   _onMouseDown: function(event) {
     event.preventDefault();
+    this._lastDrawPoint = {x:event.clientX , y: event.clientY - this._MENU_HEIGHT};
     this._drawPoint(event.clientX, event.clientY - this._MENU_HEIGHT);
     this._mouseTracking = true;
     this._mouseDownPosX = event.clientX;
@@ -286,7 +301,19 @@ MirrorView.prototype = {
   },
   _onMouseMove: function(event) {
     if (this._mouseTracking && this._mode != 'rotate') {
-      this._drawPoint(event.clientX, event.clientY - this._MENU_HEIGHT);
+      if (!this._lastDrawPoint) {
+        this._drawPoint(event.clientX, event.clientY - this._MENU_HEIGHT);
+      } else {
+        var drawPoint = {x:event.clientX , y: event.clientY - this._MENU_HEIGHT};
+        var xDiff = Math.abs(drawPoint.x - this._lastDrawPoint.x);
+        var yDiff = Math.abs(drawPoint.y - this._lastDrawPoint.y);
+        var STEP_COUNT = Math.min(50, Math.max(xDiff, yDiff));
+        for (var i = 1; i <= STEP_COUNT; ++i) {
+          this._drawPoint((this._lastDrawPoint.x * (STEP_COUNT - i) + drawPoint.x * i) / STEP_COUNT,
+                          (this._lastDrawPoint.y * (STEP_COUNT - i) + drawPoint.y * i) / STEP_COUNT);
+        }
+      }
+      this._lastDrawPoint = {x:event.clientX , y: event.clientY - this._MENU_HEIGHT};
     }
     if (!this._mouseTracking || (this._mode != 'rotate'))
       return;
@@ -295,6 +322,7 @@ MirrorView.prototype = {
     this._needsUpdate = true;
   },
   _onMouseUp: function(event) {
+    this._lastDrawPoint = undefined;
     this._clearFrameBuffer();
     this._mouseTracking = false;
   },
@@ -408,6 +436,9 @@ MirrorView.prototype = {
     this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
     this._gl.disable(this._gl.BLEND);
+  },
+  _createBluredFrame: function() {
+
   },
   _length2: function(vec) {
     return Math.sqrt(vec.x * vec.x + vec.y * vec.y);
@@ -660,6 +691,15 @@ void main() {
   } else  {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
   }
+}
+// ]]></script>
+blure
+<script id="blur-fragment-shader" type="x-shader/x-fragment">// <![CDATA[
+precision highp float;
+uniform sampler2D texture0;
+uniform vec2 blurFrameBufferSize;
+void main() {
+    gl_FragColor = texture2D(texture0, gl_FragCoord.xy / blurFrameBufferSize.xy);
 }
 // ]]></script>
 
