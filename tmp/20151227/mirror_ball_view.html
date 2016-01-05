@@ -211,6 +211,13 @@ MirrorView.prototype = {
   	this._render();
   },
   loadImage: function(img) {
+    if (!isPowOfTwo(img.width) || !isPowOfTwo(img.height)) {
+      var c = document.createElement('canvas');
+      c.width = nearestPowOfTwo(img.width);
+      c.height = nearestPowOfTwo(img.height);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      img = c;
+    }
     if (this._texture) {
       this._gl.deleteTexture(this._texture);
     }
@@ -389,6 +396,7 @@ MirrorView.prototype = {
     }
     if (this._mode != 'rotate') {
       if (this._lastTouches.length == 0 && event.touches.length == 1) {
+        this._drawing = true;
         this._drawPoint(event.touches[0].clientX, event.touches[0].clientY - this._MENU_HEIGHT);
         this._lastDrawPoint = {x:event.touches[0].clientX , y: event.touches[0].clientY - this._MENU_HEIGHT};
       } else {
@@ -398,11 +406,15 @@ MirrorView.prototype = {
     this._updateLastTouches(event.touches);
   },
   _onTouchMove: function(event) {
+    if (event.touches.length != 1) {
+      this._drawing = false;
+    }
     if (this._lastTouches.length == 2 && event.touches.length == 2) {
       this._setScale(this._scale * this._touchDist(event.touches[0], event.touches[1]) / this._touchDist(this._lastTouches[0], this._lastTouches[1]));
       var diff = this._touchDiff(this._touchCenter(event.touches[0], event.touches[1]), this._doubleTouchStartPos);
       this._lon = -diff.clientX * 0.2 + this._doubleTouchStartLon;
       this._lat = -diff.clientY * 0.2 + this._doubleTouchStartLat;
+      this._clearFrameBuffer();
       this._needsUpdate = true;
     }
     if (this._lastTouches.length == 1 && event.touches.length == 1) {
@@ -410,7 +422,7 @@ MirrorView.prototype = {
         var diff = this._touchDiff(event.touches[0], this._lastTouches[0]);
         this._lon = -diff.clientX * 0.2 + this._lon;
         this._lat = -diff.clientY * 0.2 + this._lat;
-      } else {
+      } else if (this._drawing) {
         if (!this._lastDrawPoint) {
           this._drawPoint(event.touches[0].clientX, event.touches[0].clientY - this._MENU_HEIGHT);
         } else {
@@ -431,8 +443,9 @@ MirrorView.prototype = {
   },
   _onTouchEnd: function(event) {
     this._lastDrawPoint = undefined;
-    if (event.touches.length == 0) {
+    if (event.touches.length == 0 && this._drawing) {
       this._mouseTracking = false;
+      this._drawing = false;
 
       this._executeBlureFilter(this._frameBufferForEdit0.t, null, this._frameBufferForEdit1.f, 1);
       this._executeBlureFilter(this._frameBufferForEdit1.t, this._frameBuffer.t, this._frameBufferForEdit0.f, 2);
@@ -605,6 +618,8 @@ var MenuController = function() {
 };
 MenuController.prototype = {
   initialize: function() {
+    this._openButton = document.getElementById("open-button");
+    this._openButton.addEventListener('click', this._onOpenButtonClick.bind(this), false);
     this._editButton = document.getElementById("edit-mode-button");
     this._editButton.addEventListener('click', this._onEditButtonClick.bind(this), false);
   },
@@ -630,6 +645,42 @@ MenuController.prototype = {
     }
     return '';
   },
+  _onOpenButtonClick: function() {
+    var fileInput = document.createElement('input');
+    fileInput.id = 'fileInput';
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg, image/gif, image/png';
+    fileInput.name = 'files[]';
+    fileInput.addEventListener('change', (function () {
+        if (fileInput.files.length == 0) {
+          return;
+        }
+        this._openButton.disabled = true;
+        var img = document.createElement("img");
+        var fr = new FileReader();
+        fr.onload = (function(e) {
+          img.src = e.target.result;
+          if (img.complete) {
+            this._view.loadImage(img);
+            this._openButton.disabled = false;
+            document.body.removeChild(fileInput);
+            return;
+          }
+          img.addEventListener('load', (function () {
+            this._view.loadImage(img);
+            this._openButton.disabled = false;
+            document.body.removeChild(fileInput);
+          }).bind(this));
+        }).bind(this);
+        fr.onerror = (function() {
+          this._openButton.disabled = false;
+          document.body.removeChild(fileInput);
+        })
+        fr.readAsDataURL(fileInput.files[0]);
+      }).bind(this), false);
+    document.body.appendChild(fileInput);
+    fileInput.click();
+  },
   _onEditButtonClick: function() {
     this._setEditMode(this._getNestEditMode());
   }
@@ -641,15 +692,7 @@ function init() {
   view.initialize(menuController);
   var img = new Image();
   img.addEventListener('load', (function() {
-    if (isPowOfTwo(img.width) && isPowOfTwo(img.height)) {
-      view.loadImage(img);
-      return;
-    }
-    var c = document.createElement('canvas');
-    c.width = nearestPowOfTwo(img.width);
-    c.height = nearestPowOfTwo(img.height);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    view.loadImage(c);
+    view.loadImage(img);
   }).bind(this),false);
   img.crossOrigin='anonymous';
   img.src = 'https://lh3.googleusercontent.com/NeCTYzSXmHbNmhBsXXZZe6-ZNaYGYljJzq2fGF5tR65dz02YU_-C6al9TxjpMS_BlbbqlhBv6VCdpoGxQbP-FO2b=s5376'
