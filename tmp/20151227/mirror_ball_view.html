@@ -506,6 +506,10 @@ MirrorView.prototype = {
     this._gl.useProgram(this._blurProgram);
     this._gl.activeTexture(this._gl.TEXTURE0);
     this._gl.bindTexture(this._gl.TEXTURE_2D, fromTexture);
+    if (mode == 2) {
+      this._gl.enable(this._gl.BLEND);
+      this._gl.blendFunc(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA);
+    }
     this._gl.uniform1i(this._blurTextureOrg_loc, 0);
     if (filterTexture) {
       this._gl.activeTexture(this._gl.TEXTURE1);
@@ -515,6 +519,10 @@ MirrorView.prototype = {
     this._gl.uniform1i(this._blurMode_loc, mode);
     this._gl.viewport(0, 0, this._frameBufferForEdit0.width, this._frameBufferForEdit0.height);
     this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
+    if (mode == 2) {
+      this._gl.disable(this._gl.BLEND);
+
+    }
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
   },
   _length2: function(vec) {
@@ -835,7 +843,7 @@ void main() {
   } else if (blurMode == 2) {
     vec2 texPos = gl_FragCoord.xy/ blurFrameBufferSize.xy;
     if (texture2D(blurFilterTexture, texPos).r != 1.0) {
-      discard;
+      gl_FragColor = vec4(0.0);
       return;
     }
     for(int i = -9 ; i <= 9 ; i++) {
