@@ -257,26 +257,8 @@ MirrorView.prototype = {
     context.putImageData(image, 0, 0);
     return canvas;
   },
-  save: function() {
-    var type = 'image/jpeg';
-    var a = document.createElement('a');
-    a.href = this._createCanvasForSave().toDataURL(type);
-    a.download = "image.jpg";
-    a.click();
-
-    /*
-    var dataurl = canvas.toDataURL(type);
-    var bin = atob(dataurl.split(',')[1]);
-    var buffer = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) {
-      buffer[i] = bin.charCodeAt(i);
-    }
-    var blob = new Blob([buffer.buffer], {type: type});
-    var url = window.URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = "webgl_screenshot.jpg";
-    a.click();*/
+  getDataURL: function(type) {
+    return this._createCanvasForSave().toDataURL(type);
   },
   _createCosTableTexture: function(width) {
     var canvas = document.createElement("canvas");
@@ -729,11 +711,15 @@ MenuController.prototype = {
     this._setEditMode(this._getNestEditMode());
   },
   _onSaveButtonClick: function() {
-    if (this._view) {
       this._saveButton.disabled = true;
-      this._view.save();
+      var type = 'image/jpeg';
+      var a = document.createElement('a');
+      a.href = this._view.getDataURL(type);
+      this._savedURL = undefined;
+      document.body.appendChild(a);
+      a.download = "image.jpg";
+      a.click();
       this._saveButton.disabled = false;
-    }
   }
 };
 function init() {
