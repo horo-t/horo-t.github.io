@@ -67,6 +67,10 @@ body {
 #edit-mode-button {
     left: 40px;
 }
+#save-button {
+    left: 80px;
+    background: url(img/ic_save_black_24px.svg) left top no-repeat;
+}
 .edit-rotate {
     background: url(img/ic_loop_black_24px.svg) left top no-repeat;
 }
@@ -235,6 +239,44 @@ MirrorView.prototype = {
   },
   setEditMode: function(mode) {
     this._mode = mode;
+  },
+  _createCanvasForSave: function() {
+    var pixels = new Uint8Array(this._frameBufferForEdit0.width * this._frameBufferForEdit0.height * 4);
+    this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._frameBufferForEdit0.f);
+    this._gl.readPixels(0, 0, this._frameBufferForEdit0.width, this._frameBufferForEdit0.height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, pixels);
+    this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
+
+    var canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
+    canvas.width = this._frameBufferForEdit0.width;
+    canvas.height = this._frameBufferForEdit0.height;
+    var length = canvas.width * canvas.height * 4;
+    var context = canvas.getContext("2d");
+    var image = context.createImageData(canvas.width, canvas.height);
+    image.data.set(pixels);
+    context.putImageData(image, 0, 0);
+    return canvas;
+  },
+  save: function() {
+    var type = 'image/jpeg';
+    var a = document.createElement('a');
+    a.href = this._createCanvasForSave().toDataURL(type);
+    a.download = "image.jpg";
+    a.click();
+
+    /*
+    var dataurl = canvas.toDataURL(type);
+    var bin = atob(dataurl.split(',')[1]);
+    var buffer = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) {
+      buffer[i] = bin.charCodeAt(i);
+    }
+    var blob = new Blob([buffer.buffer], {type: type});
+    var url = window.URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = "webgl_screenshot.jpg";
+    a.click();*/
   },
   _createCosTableTexture: function(width) {
     var canvas = document.createElement("canvas");
@@ -558,8 +600,8 @@ MirrorView.prototype = {
     ++this._step;
     if (!(this._step % 100)) {
       var now = performance.now();
-      var logDiv = document.getElementById('log');
-      logDiv.innerText = ('FPS: ' + 1000.0 * 100 / (now - this._lastUpdateTime));
+      // var logDiv = document.getElementById('log');
+      // logDiv.innerText = ('FPS: ' + Math.floor(1000.0 * 100 / (now - this._lastUpdateTime), 0.1));
       this._lastUpdateTime = now;
     }
     if (!this._texture)
@@ -622,6 +664,8 @@ MenuController.prototype = {
     this._openButton.addEventListener('click', this._onOpenButtonClick.bind(this), false);
     this._editButton = document.getElementById("edit-mode-button");
     this._editButton.addEventListener('click', this._onEditButtonClick.bind(this), false);
+    this._saveButton = document.getElementById("save-button");
+    this._saveButton.addEventListener('click', this._onSaveButtonClick.bind(this), false);
   },
   getEditMode: function(mode) {
     return this._edit_mode;
@@ -683,6 +727,13 @@ MenuController.prototype = {
   },
   _onEditButtonClick: function() {
     this._setEditMode(this._getNestEditMode());
+  },
+  _onSaveButtonClick: function() {
+    if (this._view) {
+      this._saveButton.disabled = true;
+      this._view.save();
+      this._saveButton.disabled = false;
+    }
   }
 };
 function init() {
@@ -690,13 +741,6 @@ function init() {
   menuController.initialize();
   view = new MirrorView();
   view.initialize(menuController);
-  var img = new Image();
-  img.addEventListener('load', (function() {
-    view.loadImage(img);
-  }).bind(this),false);
-  img.crossOrigin='anonymous';
-  img.src = 'https://lh3.googleusercontent.com/NeCTYzSXmHbNmhBsXXZZe6-ZNaYGYljJzq2fGF5tR65dz02YU_-C6al9TxjpMS_BlbbqlhBv6VCdpoGxQbP-FO2b=s5376'
-
 }
 
 </script>
@@ -897,6 +941,7 @@ void main() {
 <div id="menu">
   <button id="open-button" class="button"></button>
   <button id="edit-mode-button" class="button edit-medium-pt"></button>
+  <button id="save-button" class="button"></button>
   <div id="log"></div>
 </div>
 <div id="container"></div>
