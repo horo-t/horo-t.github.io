@@ -202,8 +202,10 @@ MirrorView.prototype = {
     this._gl.attachShader(this._blurProgram, blurFragmentShader);
     this._gl.linkProgram(this._blurProgram);
     this._gl.useProgram(this._blurProgram);
-    this._blurTextureOrg_loc = this._gl.getUniformLocation(this._programForFrameBuffer, 'blurTextureOrg');
+    this._blurTextureOrg_loc = this._gl.getUniformLocation(this._blurProgram, 'blurTextureOrg');
+    this._blurFilterTexture_loc = this._gl.getUniformLocation(this._blurProgram, 'blurFilterTexture');
     this._blurFrameBufferSize_loc = this._gl.getUniformLocation(this._blurProgram, 'blurFrameBufferSize');
+    this._blurMode_loc = this._gl.getUniformLocation(this._blurProgram, 'blurMode');
     this._gl.uniform2f(this._blurFrameBufferSize_loc, this._frameBufferForEdit0.width, this._frameBufferForEdit0.height);
 
   	this._render();
@@ -221,7 +223,8 @@ MirrorView.prototype = {
   	this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
   	this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
     this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-    this._createBluredFrame();
+    //this._createBluredFrame();
+    this._executeBlureFilter(this._texture, null, this._frameBufferForEdit0.f, 0);
   },
   setEditMode: function(mode) {
     this._mode = mode;
@@ -327,7 +330,10 @@ MirrorView.prototype = {
   },
   _onMouseUp: function(event) {
     this._lastDrawPoint = undefined;
-    // this._clearFrameBuffer();
+
+    this._executeBlureFilter(this._frameBufferForEdit0.t, null, this._frameBufferForEdit1.f, 1);
+    this._executeBlureFilter(this._frameBufferForEdit1.t, this._frameBuffer.t, this._frameBufferForEdit0.f, 2);
+    this._clearFrameBuffer();
     this._mouseTracking = false;
   },
   _setScale: function(scale) {
@@ -427,6 +433,10 @@ MirrorView.prototype = {
     this._lastDrawPoint = undefined;
     if (event.touches.length == 0) {
       this._mouseTracking = false;
+
+      this._executeBlureFilter(this._frameBufferForEdit0.t, null, this._frameBufferForEdit1.f, 1);
+      this._executeBlureFilter(this._frameBufferForEdit1.t, this._frameBuffer.t, this._frameBufferForEdit0.f, 2);
+      this._clearFrameBuffer();
     }
     this._updateLastTouches(event.touches);
   },
@@ -456,12 +466,18 @@ MirrorView.prototype = {
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
     this._gl.disable(this._gl.BLEND);
   },
-  _createBluredFrame: function() {
-    this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._frameBufferForEdit0.f);
+  _executeBlureFilter: function(fromTexture, filterTexture, toFrame, mode) {
+    this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, toFrame);
     this._gl.useProgram(this._blurProgram);
     this._gl.activeTexture(this._gl.TEXTURE0);
-    this._gl.bindTexture(this._gl.TEXTURE_2D, this._texture);
+    this._gl.bindTexture(this._gl.TEXTURE_2D, fromTexture);
     this._gl.uniform1i(this._blurTextureOrg_loc, 0);
+    if (filterTexture) {
+      this._gl.activeTexture(this._gl.TEXTURE1);
+      this._gl.bindTexture(this._gl.TEXTURE_2D, filterTexture);
+      this._gl.uniform1i(this._blurFilterTexture_loc, 1);
+    }
+    this._gl.uniform1i(this._blurMode_loc, mode);
     this._gl.viewport(0, 0, this._frameBufferForEdit0.width, this._frameBufferForEdit0.height);
     this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
@@ -541,12 +557,12 @@ MirrorView.prototype = {
     //   return;
     // this._needsUpdate = false;
     this._gl.useProgram(this._program);
-
+/*
     if (this._mouseTracking) {
       this._gl.uniform1i(this._drawMode_loc, 0);
     } else {
       this._gl.uniform1i(this._drawMode_loc, 1);
-    }
+    }*/
 
     this._lat = Math.max(-85, Math.min(85, this._lat));
     this._gl.uniform1f(this._camLon_loc, this._lon * 3.141592 / 180.0);
@@ -556,7 +572,7 @@ MirrorView.prototype = {
     this._gl.uniform1f(this._scale_loc, this._scale);
 
     this._gl.activeTexture(this._gl.TEXTURE0);
-    this._gl.bindTexture(this._gl.TEXTURE_2D, this._texture);
+    this._gl.bindTexture(this._gl.TEXTURE_2D, this._frameBufferForEdit0.t);
     this._gl.uniform1i(this._texture0_loc, 0);
 
     this._gl.activeTexture(this._gl.TEXTURE1);
@@ -731,10 +747,29 @@ blure
 <script id="blur-fragment-shader" type="x-shader/x-fragment">// <![CDATA[
 precision highp float;
 uniform sampler2D blurTextureOrg;
+uniform sampler2D blurFilterTexture;
 uniform vec2 blurFrameBufferSize;
+uniform int blurMode;
 void main() {
-  vec4 col =  texture2D(blurTextureOrg, gl_FragCoord.xy / blurFrameBufferSize.xy);
-  gl_FragColor = vec4(0.0, 1.0 - col.g, 0.0, 1.0);
+  vec3 col = vec3(0.0);
+  if (blurMode == 0) {
+    gl_FragColor = texture2D(blurTextureOrg, gl_FragCoord.xy/ blurFrameBufferSize.xy);
+  } else if (blurMode == 1) {
+    for(int i = -9 ; i <= 9 ; i++) {
+      col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(0.0, float(i))) / blurFrameBufferSize.xy).rgb / 19.0;
+    }
+    gl_FragColor = vec4(col, 1.0);
+  } else if (blurMode == 2) {
+    vec2 texPos = gl_FragCoord.xy/ blurFrameBufferSize.xy;
+    if (texture2D(blurFilterTexture, texPos).r != 1.0) {
+      discard;
+      return;
+    }
+    for(int i = -9 ; i <= 9 ; i++) {
+      col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(float(i), 0.0)) / blurFrameBufferSize.xy).rgb / 19.0;
+    }
+    gl_FragColor = vec4(col, 1.0);
+  }
 }
 // ]]></script>
 
