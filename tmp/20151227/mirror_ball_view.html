@@ -443,8 +443,6 @@ MirrorView.prototype = {
   _onWindowResize: function() {
     this._canvas.width  = window.innerWidth;
     this._canvas.height = window.innerHeight - this._MENU_HEIGHT;
-    this._gl.viewport(0, 0, this._gl.drawingBufferWidth, this._gl.drawingBufferHeight);
-    this._gl.uniform2f(this._dispSize_loc, this._canvas.width, this._canvas.height);
     this._needsUpdate = true;
   },
   _drawFramebufferPoint: function(pointRotVector, size) {
@@ -557,6 +555,8 @@ MirrorView.prototype = {
     //   return;
     // this._needsUpdate = false;
     this._gl.useProgram(this._program);
+    this._gl.viewport(0, 0, this._gl.drawingBufferWidth, this._gl.drawingBufferHeight);
+    this._gl.uniform2f(this._dispSize_loc, this._canvas.width, this._canvas.height);
 /*
     if (this._mouseTracking) {
       this._gl.uniform1i(this._drawMode_loc, 0);
