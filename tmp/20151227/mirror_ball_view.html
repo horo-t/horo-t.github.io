@@ -288,8 +288,8 @@ MirrorView.prototype = {
     this._gl.generateMipmap(this._gl.TEXTURE_2D);
     this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
     this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
-    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
-    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
+    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
+    this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
     this._gl.bindTexture(this._gl.TEXTURE_2D, null);
     return texture;
   },
@@ -795,13 +795,13 @@ float cosX(float x) {
   float signValue = 1.0;
   x = abs(x) / PI;
   x = x - floor(x / 2.0) * 2.0;
-  if (x > 1.0) x = 2.0 - x;
-  if (x > 0.5) {
+  if (x >= 1.0) x = 2.0 - x;
+  if (x >= 0.5) {
     x = 1.0 - x;
     signValue = -1.0;
   }
-  if (x == 0.0) {
-    return 1.0;
+  if (x < 0.001) {
+    return signValue;
   }
   vec4 cosColor = texture2D(cosTableTexture, vec2(x/0.5, 0.0));
   float value = cosColor.r +
@@ -845,7 +845,7 @@ void main() {
     for(int i = -9 ; i <= 9 ; i++) {
       col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(float(i), 0.0)) / blurFrameBufferSize.xy).rgb / 19.0;
     }
-    gl_FragColor = vec4(col, texture2D(blurFilterTexture, texPos).r);
+    gl_FragColor = vec4(col, sign(texture2D(blurFilterTexture, texPos).r));
   }
 }
 // ]]></script>
