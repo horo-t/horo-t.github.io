@@ -836,14 +836,14 @@ void main() {
   if (blurMode == 0) {
     gl_FragColor = texture2D(blurTextureOrg, gl_FragCoord.xy/ blurFrameBufferSize.xy);
   } else if (blurMode == 1) {
-    for(int i = -9 ; i <= 9 ; i++) {
-      col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(0.0, float(i))) / blurFrameBufferSize.xy).rgb / 19.0;
+    for(int i = -15 ; i <= 15 ; i++) {
+      col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(0.0, float(i))) / blurFrameBufferSize.xy).rgb / 31.0;
     }
     gl_FragColor = vec4(col, 1.0);
   } else if (blurMode == 2) {
     vec2 texPos = gl_FragCoord.xy/ blurFrameBufferSize.xy;
-    for(int i = -9 ; i <= 9 ; i++) {
-      col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(float(i), 0.0)) / blurFrameBufferSize.xy).rgb / 19.0;
+    for(int i = -15 ; i <= 15 ; i++) {
+      col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(float(i), 0.0)) / blurFrameBufferSize.xy).rgb / 31.0;
     }
     gl_FragColor = vec4(col, sign(texture2D(blurFilterTexture, texPos).r));
   }
