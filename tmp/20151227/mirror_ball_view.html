@@ -842,14 +842,10 @@ void main() {
     gl_FragColor = vec4(col, 1.0);
   } else if (blurMode == 2) {
     vec2 texPos = gl_FragCoord.xy/ blurFrameBufferSize.xy;
-    if (texture2D(blurFilterTexture, texPos).r != 1.0) {
-      gl_FragColor = vec4(0.0);
-      return;
-    }
     for(int i = -9 ; i <= 9 ; i++) {
       col += texture2D(blurTextureOrg, (gl_FragCoord.xy + vec2(float(i), 0.0)) / blurFrameBufferSize.xy).rgb / 19.0;
     }
-    gl_FragColor = vec4(col, 1.0);
+    gl_FragColor = vec4(col, texture2D(blurFilterTexture, texPos).r);
   }
 }
 // ]]></script>
