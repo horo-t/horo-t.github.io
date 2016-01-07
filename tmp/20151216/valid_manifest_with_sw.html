@@ -1,0 +1,23 @@
+<html>
+<head>
+<link rel="manifest" href="valid_manifest_with_sw.json">
+</head>
+<body>
+valid_manifest_with_sw
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./valid_manifest_with_sw.html"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+</script>
+<input type="button" onclick="register()" value="Register Service Worker">
+
+</body>
+</html>

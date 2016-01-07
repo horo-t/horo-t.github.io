@@ -1,0 +1,25 @@
+{
+  "name": "TestManifest",
+  "short_name": "TestManifest mini",
+  "icons": [
+      {
+        "src": "images/icon256.png",
+        "type": "image/png",
+        "sizes": "256x256"
+      }],
+  "prefer_related_applications": true,
+  "related_applications": [{
+        "platform": "play",
+        "id": "123456"
+      },
+      {
+        "platform": "play",
+        "id": "9876",
+        "url": "http://example.com"
+      }],
+  "display": "standalone",
+  "start_url": "./valid_manifest_with_sw.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "red"
+}
