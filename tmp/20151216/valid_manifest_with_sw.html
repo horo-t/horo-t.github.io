@@ -8,7 +8,7 @@ valid_manifest_with_sw
 function register() {
   navigator.serviceWorker.register("./sw.js", {scope: "./valid_manifest_with_sw.html"})
     .then(function(registration) {
-        alert("OK. Click test");
+        alert("OK. Please reload the page.");
         console.log(registration);
       })
     .catch(function(error) {
