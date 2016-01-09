@@ -186,6 +186,7 @@ MirrorView.prototype = {
     this._camLon_loc = this._gl.getUniformLocation(this._program, 'camLon');
     this._camLatSin_loc = this._gl.getUniformLocation(this._program, 'camLatSin');
     this._camLatCos_loc = this._gl.getUniformLocation(this._program, 'camLatCos');
+    this._camRot_loc = this._gl.getUniformLocation(this._program, 'camRot');
     this._ballSize_loc = this._gl.getUniformLocation(this._program, 'ballSize');
     this._scale_loc = this._gl.getUniformLocation(this._program, 'scale');
     this._texture0_loc = this._gl.getUniformLocation(this._program, 'texture0');
@@ -613,6 +614,9 @@ MirrorView.prototype = {
     this._gl.uniform1f(this._camLon_loc, this._lon * 3.141592 / 180.0);
     this._gl.uniform1f(this._camLatSin_loc, Math.sin(this._lat * 3.141592 / 180.0));
     this._gl.uniform1f(this._camLatCos_loc, Math.cos(this._lat * 3.141592 / 180.0));
+    this._gl.uniformMatrix4fv(this._camRot_loc, this._gl.FALSE, [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1]);
+
+
     this._gl.uniform1f(this._ballSize_loc, this._ballSize);
     this._gl.uniform1f(this._scale_loc, this._scale);
 
@@ -691,6 +695,7 @@ MenuController.prototype = {
         }
         this._openButton.disabled = true;
         var img = document.createElement("img");
+
         var fr = new FileReader();
         fr.onload = (function(e) {
           img.src = e.target.result;
@@ -711,9 +716,80 @@ MenuController.prototype = {
           document.body.removeChild(fileInput);
         })
         fr.readAsDataURL(fileInput.files[0]);
+
+        var fr_data = new FileReader();
+        fr_data.onload = (function(e) {
+          console.log(this._readJPEG(e.target.result));
+        }).bind(this);
+        fr_data.readAsArrayBuffer(fileInput.files[0]);
+
       }).bind(this), false);
     document.body.appendChild(fileInput);
     fileInput.click();
+  },
+  _readJPEG: function(arrayBuffer) {
+    var pos = 0;
+    var read2Bytes = (function() {
+      var bytes =  new Uint8Array(arrayBuffer, pos, 2);
+      pos += 2;
+      return bytes[0] * 0x100 + bytes[1];
+    }).bind(this);
+    var isExif = (function() {
+      var bytes = new Uint8Array(arrayBuffer, pos, 6);
+      var t = String.fromCharCode.apply(null, bytes);
+      return t == 'Exif\0\0';
+    }).bind(this);
+    var isXmp = (function() {
+      var bytes = new Uint8Array(arrayBuffer, pos, 29);
+      var t = String.fromCharCode.apply(null, bytes);
+      return t == 'http://ns.adobe.com/xap/1.0/\0';
+    }).bind(this);
+    var getLeafs = (function(node) {
+      var list = [];
+      if (node.children.length == 0)
+        return [[node.nodeName, node.innerHTML]];
+      for (var i = 0; i < node.children.length; ++i)
+        list = list.concat(getLeafs(node.children[i]));
+      return list;
+    }).bind(this);
+    var getXmp = function(size) {
+      var xmp = String.fromCharCode.apply(null, new Uint8Array(arrayBuffer, pos + 29, size - 31));
+      var startPos = xmp.search('<x:xmpmeta ');
+      var endPos = xmp.search('</x:xmpmeta>');
+      if (startPos == -1 || endPos == -1)
+        return null;
+      xmp = xmp.substr(startPos, endPos - startPos + 12);
+      var dom = (new DOMParser()).parseFromString(xmp, 'text/xml');
+      return dom;
+    };
+    try {
+      if (read2Bytes() != 0xFFD8) {
+        return null;
+      }
+      while (pos + 4 < arrayBuffer.byteLength) {
+        var marker = read2Bytes();
+        var size = read2Bytes();
+        if (marker == 0xFFDA)
+          break;
+        if (marker == 0xFFE1) {
+          if (isXmp()) {
+            var dom = getXmp(size);
+            var list = getLeafs(dom);
+            var data = {};
+            for (var i = 0; i < list.length; ++i)
+              data[list[i][0]] = list[i][1];
+            var heading = parseFloat(data['GPano:PoseHeadingDegrees']);
+            var pitch = parseFloat(data['GPano:PosePitchDegrees']);
+            var roll = parseFloat(data['GPano:PoseRollDegrees']);
+            return {heading: heading, pitch: pitch, roll: roll};
+          }
+        }
+        pos += size - 2;
+      }
+    } catch (e) {
+
+    }
+    return null;
   },
   _onEditButtonClick: function() {
     this._setEditMode(this._getNestEditMode());
@@ -860,6 +936,9 @@ uniform int mode;
 uniform float camLon;
 uniform float camLatSin;
 uniform float camLatCos;
+
+uniform mat4 camRot;
+
 uniform float ballSize;
 uniform float scale;
 
@@ -907,6 +986,7 @@ void main() {
   vec3 input_vector = vec3(-1.0, v.y, v.x);
   vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
   vec3 result = rotateZ(camLatSin, camLatCos, reflect_vector);
+  //vec4 result = camRot * vec4(reflect_vector, 0);
   float lon = atan(result.z, result.x);
   float lat = - atan(result.y, length(vec3(result.x, 0, result.z)));
   vec2 texPos = vec2((lon + camLon) / PI2, lat / PI + 0.5);
