@@ -358,8 +358,8 @@ MirrorView.prototype = {
     }
     if (!this._mouseTracking || (this._mode != 'rotate'))
       return;
-    this._lon = -(event.clientX - this._mouseDownPosX) * 0.2 + this._mouseDownLon;
-    this._lat = -(event.clientY - this._MENU_HEIGHT - this._mouseDownPosY) * 0.2 + this._mouseDownLat;
+    this._lon = (event.clientX - this._mouseDownPosX) * 0.2 + this._mouseDownLon;
+    this._lat = (event.clientY - this._MENU_HEIGHT - this._mouseDownPosY) * 0.2 + this._mouseDownLat;
     this._needsUpdate = true;
   },
   _onMouseUp: function(event) {
@@ -439,16 +439,16 @@ MirrorView.prototype = {
     if (this._lastTouches.length == 2 && event.touches.length == 2) {
       this._setScale(this._scale * this._touchDist(event.touches[0], event.touches[1]) / this._touchDist(this._lastTouches[0], this._lastTouches[1]));
       var diff = this._touchDiff(this._touchCenter(event.touches[0], event.touches[1]), this._doubleTouchStartPos);
-      this._lon = -diff.clientX * 0.2 + this._doubleTouchStartLon;
-      this._lat = -diff.clientY * 0.2 + this._doubleTouchStartLat;
+      this._lon = diff.clientX * 0.2 + this._doubleTouchStartLon;
+      this._lat = diff.clientY * 0.2 + this._doubleTouchStartLat;
       this._clearFrameBuffer();
       this._needsUpdate = true;
     }
     if (this._lastTouches.length == 1 && event.touches.length == 1) {
       if (this._mode == 'rotate') {
         var diff = this._touchDiff(event.touches[0], this._lastTouches[0]);
-        this._lon = -diff.clientX * 0.2 + this._lon;
-        this._lat = -diff.clientY * 0.2 + this._lat;
+        this._lon = diff.clientX * 0.2 + this._lon;
+        this._lat = diff.clientY * 0.2 + this._lat;
       } else if (this._drawing) {
         if (!this._lastDrawPoint) {
           this._drawPoint(event.touches[0].clientX, event.touches[0].clientY - this._MENU_HEIGHT);
