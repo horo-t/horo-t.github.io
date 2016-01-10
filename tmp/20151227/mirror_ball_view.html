@@ -96,7 +96,7 @@ var MirrorView = function() {
   this._MENU_HEIGHT = 40;
   this._lon = 0;
   this._lat = 0;
-  this._ballSize = 0.2;
+  this._ballSize = 0.05;
   this._scale = 1.0;
   this._mouseTracking = false;
   this._mouseDownPosX = 0;
@@ -371,10 +371,10 @@ MirrorView.prototype = {
     this._mouseTracking = false;
   },
   _setScale: function(scale) {
-    if (scale > 3)
-      scale = 3;
-    if (scale < 0.5)
-      scale = 0.5;
+    if (scale > 30)
+      scale = 30;
+    if (scale < 0.005)
+      scale = 0.005;
     this._scale = scale;
   },
   _onMouseWheel: function(event) {
@@ -497,7 +497,7 @@ MirrorView.prototype = {
     this._gl.bindTexture(this._gl.TEXTURE_2D, this._cosTableTexture);
     this._gl.uniform1i(this._cosTableTexture_loc, 0);
     this._gl.viewport(0, 0, this._frameBuffer.width, this._frameBuffer.height);
-    var lat = Math.atan2(pointRotVector.y,this._length2({x: pointRotVector.x, y: pointRotVector.z}));
+    var lat = -Math.atan2(pointRotVector.y,this._length2({x: pointRotVector.x, y: pointRotVector.z}));
     this._gl.uniform1f(this._ySize_loc, Math.atan(size) * 2.0 / this._PI);
     this._gl.uniform1f(this._yBase_loc, lat  * 2.0 / this._PI);
     this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
@@ -547,13 +547,13 @@ MirrorView.prototype = {
     return {x: vec.x / len, y: vec.y / len, z: vec.z / len};
   },
   _rotateX: function(s, c, p) {
-    return {x: p.x, y: c * p.y + s * p.z, z: s * p.y + c * p.z};
+    return {x: p.x, y: c * p.y - s * p.z, z: s * p.y + c * p.z};
   },
   _rotateY: function(s, c, p) {
-    return {x: c * p.x + s * p.z, y: p.y, z: s * p.x + c * p.z};
+    return {x: c * p.x + s * p.z, y: p.y, z: - s * p.x + c * p.z};
   },
   _rotateZ: function(s, c, p) {
-    return {x: c * p.x + s * p.y, y: -s * p.x+ c * p.y, z: p.z};
+    return {x: c * p.x - s * p.y, y: s * p.x+ c * p.y, z: p.z};
   },
   _dot: function(v0, v1) {
     return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
@@ -598,6 +598,13 @@ MirrorView.prototype = {
     var c = Math.cos(a * 3.141592 / 180.0), s = Math.sin(a * 3.141592 / 180.0);
     return [c, -s, 0, 0,  s, c, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
   },
+  _multiply4mv: function(m, v) {
+    var x = v.x, y = v.y, z = v.z;
+    return {
+      x: x * m[0] + y * m[1] + z * m[2] ,
+      y: x * m[4] + y * m[5] + z * m[6] ,
+      z: x * m[8] + y * m[9] + z * m[10]};
+  },
   _reflect: function(i, n) {
     var d = this._dot(n, i);
     return {
@@ -612,23 +619,45 @@ MirrorView.prototype = {
     if (v2 > this._ballSize / (1.0 - this._ballSize)) {
       return {x: 0.0, y: 0.0, z: 0.0};
     }
-    var camRotMat = this._getCamRotMat();
-
-    var camLatSin = Math.sin(this._lat * 3.141592 / 180.0);
-    var camLatCos = Math.cos(this._lat * 3.141592 / 180.0);
-    var camLon = this._lon * 3.141592 / 180.0;
+    var camRotMat = this._getCamRotMatInv();
     var v_size = Math.sqrt(v2);
     var tmp = Math.sqrt(this._ballSize + this._ballSize * v2 - v2);
     var normal_pos = this._normalize2(v);
-    var normal_vector = this._normalize3({x: tmp + v2, y: v_size * (1.0 - tmp), z: 0.0});
-    var normal_rotate_vector = this._rotateX(normal_pos.x, normal_pos.y, normal_vector);
-    var input_vector = {x: -1.0, y: v.y, z: v.x};
+    var normal_vector = this._normalize3({x: v_size * (1.0 - tmp), y:0.0, z: tmp + v2});
+    var normal_rotate_vector = this._rotateZ(normal_pos.y, normal_pos.x, normal_vector);
+    var input_vector = {x: v.x, y: v.y, z: -1.0};
     var reflect_vector = this._reflect(input_vector, normal_rotate_vector);
-    var result = this._rotateZ(camLatSin, camLatCos, reflect_vector);
-    var lon = Math.atan2(result.z, result.x) + camLon;
-    var lat = Math.atan2(result.y, this._length3({x:result.x, y: 0.0, z:result.z}));
-    var rot_vec = this._rotateY(Math.sin(lon), Math.cos(lon), this._rotateZ(Math.sin(lat), Math.cos(lat), {x: 1.0, y: 0.0, z: 0.0}));
-    return rot_vec;
+    var result = this._multiply4mv(camRotMat, reflect_vector);
+    result = this._normalize3(result);
+    return result;
+    /*
+    float v_size = length(v);
+    float tmp = sqrt(ballSize + ballSize * v2 - v2);
+    vec2 normal_pos = normalize(v);
+    vec3 normal_vector = normalize(vec3(v_size * (1.0 - tmp), 0.0, tmp + v2));
+    vec3 normal_rotate_vector = rotateZ(normal_pos.y, normal_pos.x, normal_vector);
+    vec3 input_vector = vec3(v.x, v.y, -1.0);
+    vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
+    vec4 result = camRot * vec4(reflect_vector, 0);
+    float lon = atan(result.x, result.z);
+    float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
+    vec2 texPos = vec2(lon / PI2 + 0.5, - lat / PI + 0.5);
+    vec4 overlayColor = texture2D(texture1, texPos);
+    */
+  },
+  _getCamRotMatInv: function () {
+    var camLat = this._lat;
+    var camLon = this._lon;
+    var camRot = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
+    var pose = {heading: 0, pitch: 0, roll: 0};
+    if (this._poseInfo)
+      pose = this._poseInfo;
+    camRot = this._multiply4m(this._rotateZ4m(pose.roll), camRot);
+    camRot = this._multiply4m(this._rotateX4m(pose.pitch), camRot);
+    camRot = this._multiply4m(this._rotateY4m(-camLon), camRot)
+    camRot = this._multiply4m(this._rotateX4m(-camLat), camRot);
+
+    return camRot
   },
   _getCamRotMat: function () {
     var camLat = this._lat;
@@ -639,7 +668,7 @@ MirrorView.prototype = {
       pose = this._poseInfo;;
     camRot = this._multiply4m(this._rotateX4m(camLat), camRot);
     camRot = this._multiply4m(this._rotateY4m(camLon), camRot)
-    camRot = this._multiply4m(this._rotateX4m(pose.pitch), camRot);
+    camRot = this._multiply4m(this._rotateX4m(-pose.pitch), camRot);
     return this._multiply4m(this._rotateZ4m(-pose.roll), camRot);
   },
   _render: function() {
@@ -873,6 +902,7 @@ uniform float ySize;
 uniform float yBase;
 void main() {
   gl_Position = vec4(pos.x, pos.y*ySize+ yBase, 0, 1);
+//  gl_Position = vec4(pos, 0, 1);
 }
 // ]]></script>
 <script id="fragment-shader-for-frame-buffer" type="x-shader/x-fragment">// <![CDATA[
@@ -885,16 +915,15 @@ uniform float pointSize;
 
 uniform sampler2D cosTableTexture;
 
-vec3 rotateY(float s, float c, vec3 p){
-  return vec3(c * p.x + s * p.z, p.y, s * p.x + c * p.z);
-}
 vec3 rotateX(float s, float c, vec3 p){
-  return vec3(p.x, c * p.y + s * p.z, s * p.y + c * p.z);
+  return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
+}
+vec3 rotateY(float s, float c, vec3 p){
+  return vec3(c * p.x + s * p.z, p.y, - s * p.x + c * p.z);
 }
 vec3 rotateZ(float s, float c, vec3 p){
-  return vec3(c * p.x + s * p.y, -s * p.x+ c * p.y, p.z);
+  return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
 }
-
 float sinf(float x)
 {
   x*=0.159155;
@@ -936,9 +965,16 @@ float sinX(float x) {
   return cosX(x - PI / 2.0);
 }
 void main() {
-  float lon = (gl_FragCoord.x / frameBufferSize.x) * PI2;
-  float lat = -(gl_FragCoord.y / frameBufferSize.y - 0.5) * PI;
-  vec3 pos_vec = rotateY(sinX(lon), cosX(lon), rotateZ(sinX(lat), cosX(lat), vec3(1.0, 0.0, 0.0)));
+  /*
+   float lon = atan(result.x, result.z);
+   float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
+   vec2 texPos = vec2(lon / PI2 + 0.5, - lat / PI + 0.5);
+   vec4 overlayColor = texture2D(texture1, texPos);
+  */
+
+  float lon = (gl_FragCoord.x / frameBufferSize.x - 0.5) * PI2;
+  float lat = (- gl_FragCoord.y / frameBufferSize.y + 0.5) * PI;
+  vec3 pos_vec = rotateY(sinX(lon), cosX(lon), rotateX(sinX(-lat), cosX(-lat), vec3(0.0, 0.0, 1.0)));
   if (dot(inputVector, pos_vec) > 0.0 &&
       distance(pos_vec, inputVector) < pointSize) {
     gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
@@ -988,42 +1024,15 @@ uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform vec2 dispSize;
-/*
-vec3 rotate(float angle, vec3 axis, vec3 p){
-  float s = sin(angle);
-  float c = cos(angle);
-  vec3 a = normalize(axis);
-  float r = 1.0 - c;
-  return mat3(
-      a.x * a.x * r + c,
-      a.y * a.x * r + a.z * s,
-      a.z * a.x * r - a.y * s,
-      a.x * a.y * r - a.z * s,
-      a.y * a.y * r + c,
-      a.z * a.y * r + a.x * s,
-      a.x * a.z * r + a.y * s,
-      a.y * a.z * r - a.x * s,
-      a.z * a.z * r + c) * p;
-}*/
-vec3 rotateY(float s, float c, vec3 p){
-  vec3 a = vec3(0.0, 1.0, 0.0);
-  float r = 1.0 - c;
-  return mat3(
-      a.x * a.x * r + c,
-      a.y * a.x * r + a.z * s,
-      a.z * a.x * r - a.y * s,
-      a.x * a.y * r - a.z * s,
-      a.y * a.y * r + c,
-      a.z * a.y * r + a.x * s,
-      a.x * a.z * r + a.y * s,
-      a.y * a.z * r - a.x * s,
-      a.z * a.z * r + c) * p;
-}
+
 vec3 rotateX(float s, float c, vec3 p){
-  return vec3(p.x, c * p.y + s * p.z, s * p.y + c * p.z);
+  return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
+}
+vec3 rotateY(float s, float c, vec3 p){
+  return vec3(c * p.x + s * p.z, p.y, - s * p.x + c * p.z);
 }
 vec3 rotateZ(float s, float c, vec3 p){
-  return vec3(c * p.x + s * p.y, -s * p.x+ c * p.y, p.z);
+  return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
 }
 void main() {
 //  gl_FragColor = texture2D(texture0, gl_FragCoord.xy/ dispSize.xy * vec2(1.0, -1.0));
@@ -1039,14 +1048,14 @@ void main() {
   float v_size = length(v);
   float tmp = sqrt(ballSize + ballSize * v2 - v2);
   vec2 normal_pos = normalize(v);
-  vec3 normal_vector = normalize(vec3(0.0, v_size * (1.0 - tmp), -tmp - v2));
-  vec3 normal_rotate_vector = rotateZ(normal_pos.x, normal_pos.y, normal_vector);
-  vec3 input_vector = vec3(v.x, v.y, 1.0);
+  vec3 normal_vector = normalize(vec3(v_size * (1.0 - tmp), 0.0, tmp + v2));
+  vec3 normal_rotate_vector = rotateZ(normal_pos.y, normal_pos.x, normal_vector);
+  vec3 input_vector = vec3(v.x, v.y, -1.0);
   vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
   vec4 result = camRot * vec4(reflect_vector, 0);
-  float lon = atan(result.x, -result.z);
+  float lon = atan(result.x, result.z);
   float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
-  vec2 texPos = vec2(lon / PI2 + 0.5, lat / PI + 0.5) * vec2(1.0, -1.0);
+  vec2 texPos = vec2(lon / PI2 + 0.5, - lat / PI + 0.5);
   vec4 overlayColor = texture2D(texture1, texPos);
   if (overlayColor.r == 1.0) {
     vec4 origColor = texture2D(texture0, texPos);
