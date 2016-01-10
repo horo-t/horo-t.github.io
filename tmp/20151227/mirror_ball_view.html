@@ -94,7 +94,7 @@ margin: 0;
 var view;
 var MirrorView = function() {
   this._MENU_HEIGHT = 40;
-  this._lon = 90;
+  this._lon = 0;
   this._lat = 0;
   this._ballSize = 0.2;
   this._scale = 1.0;
@@ -183,9 +183,6 @@ MirrorView.prototype = {
     this._gl.enableVertexAttribArray(positionLocation);
     this._gl.vertexAttribPointer(positionLocation, 2, this._gl.FLOAT, false, 0, 0);
 
-    this._camLon_loc = this._gl.getUniformLocation(this._program, 'camLon');
-    this._camLatSin_loc = this._gl.getUniformLocation(this._program, 'camLatSin');
-    this._camLatCos_loc = this._gl.getUniformLocation(this._program, 'camLatCos');
     this._camRot_loc = this._gl.getUniformLocation(this._program, 'camRot');
     this._ballSize_loc = this._gl.getUniformLocation(this._program, 'ballSize');
     this._scale_loc = this._gl.getUniformLocation(this._program, 'scale');
@@ -215,12 +212,16 @@ MirrorView.prototype = {
 
   	this._render();
   },
+  setPoseInfo: function(poseInfo) {
+    this._poseInfo = poseInfo;
+  },
   loadImage: function(img) {
     if (!isPowOfTwo(img.width) || !isPowOfTwo(img.height)) {
       var c = document.createElement('canvas');
       c.width = nearestPowOfTwo(img.width);
       c.height = nearestPowOfTwo(img.height);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      var cxt = c.getContext('2d');
+      cxt.drawImage(img, 0, 0, c.width, c.height);
       img = c;
     }
     if (this._texture) {
@@ -556,6 +557,46 @@ MirrorView.prototype = {
   _dot: function(v0, v1) {
     return v0.x * v1.x + v0.y * v1.y + v0.z * v1.z;
   },
+  _multiply4m: function(m1, m2) {
+    var m100 = m1[0], m101 = m1[1], m102 = m1[2], m103 = m1[3];
+    var m110 = m1[4], m111 = m1[5], m112 = m1[6], m113 = m1[7];
+    var m120 = m1[8], m121 = m1[9], m122 = m1[10], m123 = m1[11];
+    var m130 = m1[12], m131 = m1[13], m132 = m1[14], m133 = m1[15];
+
+    var m200 = m2[0], m201 = m2[1], m202 = m2[2], m203 = m2[3];
+    var m210 = m2[4], m211 = m2[5], m212 = m2[6], m213 = m2[7];
+    var m220 = m2[8], m221 = m2[9], m222 = m2[10], m223 = m2[11];
+    var m230 = m2[12], m231 = m2[13], m232 = m2[14], m233 = m2[15];
+    return [
+      m200*m100 + m201*m110 + m202*m120 + m203*m130,
+      m200*m101 + m201*m111 + m202*m121 + m203*m131,
+      m200*m102 + m201*m112 + m202*m122 + m203*m132,
+      m200*m103 + m201*m113 + m202*m123 + m203*m133,
+      m210*m100 + m211*m110 + m212*m120 + m213*m130,
+      m210*m101 + m211*m111 + m212*m121 + m213*m131,
+      m210*m102 + m211*m112 + m212*m122 + m213*m132,
+      m210*m103 + m211*m113 + m212*m123 + m213*m133,
+      m220*m100 + m221*m110 + m222*m120 + m223*m130,
+      m220*m101 + m221*m111 + m222*m121 + m223*m131,
+      m220*m102 + m221*m112 + m222*m122 + m223*m132,
+      m220*m103 + m221*m113 + m222*m123 + m223*m133,
+      m230*m100 + m231*m110 + m232*m120 + m233*m130,
+      m230*m101 + m231*m111 + m232*m121 + m233*m131,
+      m230*m102 + m231*m112 + m232*m122 + m233*m132,
+      m230*m103 + m231*m113 + m232*m123 + m233*m133];
+  },
+  _rotateX4m: function(a) {
+    var c = Math.cos(a * 3.141592 / 180.0), s = Math.sin(a * 3.141592 / 180.0);
+    return [1, 0, 0, 0,  0, c, -s, 0,  0, s, c, 0,  0, 0, 0, 1];
+  },
+  _rotateY4m: function(a) {
+    var c = Math.cos(a * 3.141592 / 180.0), s = Math.sin(a * 3.141592 / 180.0);
+    return [c, 0, s, 0,  0, 1, 0, 0,  -s, 0, c, 0,  0, 0, 0, 1];
+  },
+  _rotateZ4m: function(a) {
+    var c = Math.cos(a * 3.141592 / 180.0), s = Math.sin(a * 3.141592 / 180.0);
+    return [c, -s, 0, 0,  s, c, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
+  },
   _reflect: function(i, n) {
     var d = this._dot(n, i);
     return {
@@ -611,10 +652,19 @@ MirrorView.prototype = {
     }*/
 
     this._lat = Math.max(-85, Math.min(85, this._lat));
-    this._gl.uniform1f(this._camLon_loc, this._lon * 3.141592 / 180.0);
-    this._gl.uniform1f(this._camLatSin_loc, Math.sin(this._lat * 3.141592 / 180.0));
-    this._gl.uniform1f(this._camLatCos_loc, Math.cos(this._lat * 3.141592 / 180.0));
-    this._gl.uniformMatrix4fv(this._camRot_loc, this._gl.FALSE, [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1]);
+    var camLat = this._lat;
+    var camLon = this._lon;
+    var camRot = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
+    var pose = {heading: 0, pitch: 0, roll: 0};
+    if (this._poseInfo)
+      pose = this._poseInfo;;
+    // camRot = this._multiply4m(this._rotateY4m(-pose.heading), camRot);
+    camRot = this._multiply4m(this._rotateZ4m(camLat), camRot);
+    camRot = this._multiply4m(this._rotateY4m(camLon), camRot)
+    // camRot = this._multiply4m(this._rotateX4m(pose.pitch), camRot);
+    // camRot = this._multiply4m(this._rotateZ4m(pose.roll), camRot);
+
+    this._gl.uniformMatrix4fv(this._camRot_loc, this._gl.FALSE, camRot);
 
 
     this._gl.uniform1f(this._ballSize_loc, this._ballSize);
@@ -719,7 +769,10 @@ MenuController.prototype = {
 
         var fr_data = new FileReader();
         fr_data.onload = (function(e) {
-          console.log(this._readJPEG(e.target.result));
+          var poseInfo = this._getPoseInfo(e.target.result);
+          if (poseInfo) {
+            this._view.setPoseInfo(poseInfo);
+          }
         }).bind(this);
         fr_data.readAsArrayBuffer(fileInput.files[0]);
 
@@ -727,7 +780,7 @@ MenuController.prototype = {
     document.body.appendChild(fileInput);
     fileInput.click();
   },
-  _readJPEG: function(arrayBuffer) {
+  _getPoseInfo: function(arrayBuffer) {
     var pos = 0;
     var read2Bytes = (function() {
       var bytes =  new Uint8Array(arrayBuffer, pos, 2);
@@ -932,11 +985,6 @@ void main() {
 precision highp float;
 
 uniform int mode;
-
-uniform float camLon;
-uniform float camLatSin;
-uniform float camLatCos;
-
 uniform mat4 camRot;
 
 uniform float ballSize;
@@ -985,18 +1033,17 @@ void main() {
   vec3 normal_rotate_vector = rotateX(normal_pos.x, normal_pos.y, normal_vector);
   vec3 input_vector = vec3(-1.0, v.y, v.x);
   vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
-  vec3 result = rotateZ(camLatSin, camLatCos, reflect_vector);
-  //vec4 result = camRot * vec4(reflect_vector, 0);
+  vec4 result = camRot * vec4(reflect_vector, 0);
   float lon = atan(result.z, result.x);
-  float lat = - atan(result.y, length(vec3(result.x, 0, result.z)));
-  vec2 texPos = vec2((lon + camLon) / PI2, lat / PI + 0.5);
-  vec4 overlayColor = texture2D(texture1, texPos);
+  float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
+  vec2 texPos = vec2(lon / PI2 + 0.5, lat / PI + 0.5);
+  vec4 overlayColor = texture2D(texture1, texPos * vec2(1.0, -1.0));
   if (mode == 0) {
     if (overlayColor.r == 1.0) {
-      vec4 origColor = texture2D(texture0, texPos);
+      vec4 origColor = texture2D(texture0, texPos * vec2(1.0, -1.0));
       gl_FragColor =  vec4(1.0 - origColor.r, 0.0, 0.0, 1.0);
     } else {
-      gl_FragColor = texture2D(texture0, texPos);
+      gl_FragColor = texture2D(texture0, texPos * vec2(1.0, -1.0));
     }
   } else {
     if (overlayColor.r == 1.0) {
