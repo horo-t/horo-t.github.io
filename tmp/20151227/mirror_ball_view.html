@@ -213,6 +213,7 @@ MirrorView.prototype = {
   	this._render();
   },
   setPoseInfo: function(poseInfo) {
+    console.log(JSON.stringify(poseInfo));
     this._poseInfo = poseInfo;
   },
   loadImage: function(img) {
@@ -611,6 +612,8 @@ MirrorView.prototype = {
     if (v2 > this._ballSize / (1.0 - this._ballSize)) {
       return {x: 0.0, y: 0.0, z: 0.0};
     }
+    var camRotMat = this._getCamRotMat();
+
     var camLatSin = Math.sin(this._lat * 3.141592 / 180.0);
     var camLatCos = Math.cos(this._lat * 3.141592 / 180.0);
     var camLon = this._lon * 3.141592 / 180.0;
@@ -627,6 +630,18 @@ MirrorView.prototype = {
     var rot_vec = this._rotateY(Math.sin(lon), Math.cos(lon), this._rotateZ(Math.sin(lat), Math.cos(lat), {x: 1.0, y: 0.0, z: 0.0}));
     return rot_vec;
   },
+  _getCamRotMat: function () {
+    var camLat = this._lat;
+    var camLon = this._lon;
+    var camRot = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
+    var pose = {heading: 0, pitch: 0, roll: 0};
+    if (this._poseInfo)
+      pose = this._poseInfo;;
+    camRot = this._multiply4m(this._rotateX4m(camLat), camRot);
+    camRot = this._multiply4m(this._rotateY4m(camLon), camRot)
+    camRot = this._multiply4m(this._rotateX4m(pose.pitch), camRot);
+    return this._multiply4m(this._rotateZ4m(-pose.roll), camRot);
+  },
   _render: function() {
     window.requestAnimationFrame(this._render.bind(this), this._canvas);
     ++this._step;
@@ -638,35 +653,14 @@ MirrorView.prototype = {
     }
     if (!this._texture)
       return;
+    this._lat = Math.max(-85, Math.min(85, this._lat));
     // if (!this._needsUpdate)
     //   return;
     // this._needsUpdate = false;
     this._gl.useProgram(this._program);
     this._gl.viewport(0, 0, this._gl.drawingBufferWidth, this._gl.drawingBufferHeight);
     this._gl.uniform2f(this._dispSize_loc, this._canvas.width, this._canvas.height);
-/*
-    if (this._mouseTracking) {
-      this._gl.uniform1i(this._drawMode_loc, 0);
-    } else {
-      this._gl.uniform1i(this._drawMode_loc, 1);
-    }*/
-
-    this._lat = Math.max(-85, Math.min(85, this._lat));
-    var camLat = this._lat;
-    var camLon = this._lon;
-    var camRot = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
-    var pose = {heading: 0, pitch: 0, roll: 0};
-    if (this._poseInfo)
-      pose = this._poseInfo;;
-    // camRot = this._multiply4m(this._rotateY4m(-pose.heading), camRot);
-    camRot = this._multiply4m(this._rotateZ4m(camLat), camRot);
-    camRot = this._multiply4m(this._rotateY4m(camLon), camRot)
-    // camRot = this._multiply4m(this._rotateX4m(pose.pitch), camRot);
-    // camRot = this._multiply4m(this._rotateZ4m(pose.roll), camRot);
-
-    this._gl.uniformMatrix4fv(this._camRot_loc, this._gl.FALSE, camRot);
-
-
+    this._gl.uniformMatrix4fv(this._camRot_loc, this._gl.FALSE, this._getCamRotMat());
     this._gl.uniform1f(this._ballSize_loc, this._ballSize);
     this._gl.uniform1f(this._scale_loc, this._scale);
 
@@ -1011,6 +1005,20 @@ vec3 rotate(float angle, vec3 axis, vec3 p){
       a.y * a.z * r - a.x * s,
       a.z * a.z * r + c) * p;
 }*/
+vec3 rotateY(float s, float c, vec3 p){
+  vec3 a = vec3(0.0, 1.0, 0.0);
+  float r = 1.0 - c;
+  return mat3(
+      a.x * a.x * r + c,
+      a.y * a.x * r + a.z * s,
+      a.z * a.x * r - a.y * s,
+      a.x * a.y * r - a.z * s,
+      a.y * a.y * r + c,
+      a.z * a.y * r + a.x * s,
+      a.x * a.z * r + a.y * s,
+      a.y * a.z * r - a.x * s,
+      a.z * a.z * r + c) * p;
+}
 vec3 rotateX(float s, float c, vec3 p){
   return vec3(p.x, c * p.y + s * p.z, s * p.y + c * p.z);
 }
@@ -1018,6 +1026,8 @@ vec3 rotateZ(float s, float c, vec3 p){
   return vec3(c * p.x + s * p.y, -s * p.x+ c * p.y, p.z);
 }
 void main() {
+//  gl_FragColor = texture2D(texture0, gl_FragCoord.xy/ dispSize.xy * vec2(1.0, -1.0));
+//  return;
   vec2 v;
   v = vec2((gl_FragCoord.x - 0.5*dispSize.x) / (dispSize.y * scale), (gl_FragCoord.y - 0.5 * dispSize.y)/ (dispSize.y * scale));
   float v2;
@@ -1029,28 +1039,20 @@ void main() {
   float v_size = length(v);
   float tmp = sqrt(ballSize + ballSize * v2 - v2);
   vec2 normal_pos = normalize(v);
-  vec3 normal_vector = normalize(vec3(tmp + v2, v_size * (1.0 - tmp), 0.0));
-  vec3 normal_rotate_vector = rotateX(normal_pos.x, normal_pos.y, normal_vector);
-  vec3 input_vector = vec3(-1.0, v.y, v.x);
+  vec3 normal_vector = normalize(vec3(0.0, v_size * (1.0 - tmp), -tmp - v2));
+  vec3 normal_rotate_vector = rotateZ(normal_pos.x, normal_pos.y, normal_vector);
+  vec3 input_vector = vec3(v.x, v.y, 1.0);
   vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
   vec4 result = camRot * vec4(reflect_vector, 0);
-  float lon = atan(result.z, result.x);
+  float lon = atan(result.x, -result.z);
   float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
-  vec2 texPos = vec2(lon / PI2 + 0.5, lat / PI + 0.5);
-  vec4 overlayColor = texture2D(texture1, texPos * vec2(1.0, -1.0));
-  if (mode == 0) {
-    if (overlayColor.r == 1.0) {
-      vec4 origColor = texture2D(texture0, texPos * vec2(1.0, -1.0));
-      gl_FragColor =  vec4(1.0 - origColor.r, 0.0, 0.0, 1.0);
-    } else {
-      gl_FragColor = texture2D(texture0, texPos * vec2(1.0, -1.0));
-    }
+  vec2 texPos = vec2(lon / PI2 + 0.5, lat / PI + 0.5) * vec2(1.0, -1.0);
+  vec4 overlayColor = texture2D(texture1, texPos);
+  if (overlayColor.r == 1.0) {
+    vec4 origColor = texture2D(texture0, texPos);
+    gl_FragColor =  vec4(1.0 - origColor.r, 0.0, 0.0, 1.0);
   } else {
-    if (overlayColor.r == 1.0) {
-      gl_FragColor = texture2D(texture2, texPos);
-    } else {
-      gl_FragColor = texture2D(texture0, texPos);
-    }
+    gl_FragColor = texture2D(texture0, texPos);
   }
 }
 // ]]></script>
