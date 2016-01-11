@@ -601,9 +601,9 @@ MirrorView.prototype = {
   _multiply4mv: function(m, v) {
     var x = v.x, y = v.y, z = v.z;
     return {
-      x: x * m[0] + y * m[1] + z * m[2] ,
-      y: x * m[4] + y * m[5] + z * m[6] ,
-      z: x * m[8] + y * m[9] + z * m[10]};
+      x: x * m[0] + y * m[4] + z * m[8] ,
+      y: x * m[1] + y * m[5] + z * m[9] ,
+      z: x * m[2] + y * m[6] + z * m[10]};
   },
   _reflect: function(i, n) {
     var d = this._dot(n, i);
@@ -619,7 +619,7 @@ MirrorView.prototype = {
     if (v2 > this._ballSize / (1.0 - this._ballSize)) {
       return {x: 0.0, y: 0.0, z: 0.0};
     }
-    var camRotMat = this._getCamRotMatInv();
+    var camRotMat = this._getCamRotMat();
     var v_size = Math.sqrt(v2);
     var tmp = Math.sqrt(this._ballSize + this._ballSize * v2 - v2);
     var normal_pos = this._normalize2(v);
@@ -630,34 +630,6 @@ MirrorView.prototype = {
     var result = this._multiply4mv(camRotMat, reflect_vector);
     result = this._normalize3(result);
     return result;
-    /*
-    float v_size = length(v);
-    float tmp = sqrt(ballSize + ballSize * v2 - v2);
-    vec2 normal_pos = normalize(v);
-    vec3 normal_vector = normalize(vec3(v_size * (1.0 - tmp), 0.0, tmp + v2));
-    vec3 normal_rotate_vector = rotateZ(normal_pos.y, normal_pos.x, normal_vector);
-    vec3 input_vector = vec3(v.x, v.y, -1.0);
-    vec3 reflect_vector = reflect(input_vector, normal_rotate_vector);
-    vec4 result = camRot * vec4(reflect_vector, 0);
-    float lon = atan(result.x, result.z);
-    float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
-    vec2 texPos = vec2(lon / PI2 + 0.5, - lat / PI + 0.5);
-    vec4 overlayColor = texture2D(texture1, texPos);
-    */
-  },
-  _getCamRotMatInv: function () {
-    var camLat = this._lat;
-    var camLon = this._lon;
-    var camRot = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
-    var pose = {heading: 0, pitch: 0, roll: 0};
-    if (this._poseInfo)
-      pose = this._poseInfo;
-    camRot = this._multiply4m(this._rotateZ4m(pose.roll), camRot);
-    camRot = this._multiply4m(this._rotateX4m(pose.pitch), camRot);
-    camRot = this._multiply4m(this._rotateY4m(-camLon), camRot)
-    camRot = this._multiply4m(this._rotateX4m(-camLat), camRot);
-
-    return camRot
   },
   _getCamRotMat: function () {
     var camLat = this._lat;
