@@ -90,6 +90,7 @@ border: 0;
 margin: 0;
 }
 </style>
+<script src="./jpeg_encoder_basic.js"></script>
 <script>
 var view;
 var MirrorView = function() {
@@ -188,9 +189,7 @@ MirrorView.prototype = {
     this._scale_loc = this._gl.getUniformLocation(this._program, 'scale');
     this._texture0_loc = this._gl.getUniformLocation(this._program, 'texture0');
     this._texture1_loc = this._gl.getUniformLocation(this._program, 'texture1');
-    this._texture2_loc = this._gl.getUniformLocation(this._program, 'texture2');
     this._dispSize_loc = this._gl.getUniformLocation(this._program, 'dispSize');
-    this._drawMode_loc = this._gl.getUniformLocation(this._program, 'mode');
     this._gl.uniform2f(this._dispSize_loc, this._canvas.width, this._canvas.height);
 
     var blurFragmentShader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
@@ -243,25 +242,89 @@ MirrorView.prototype = {
   setEditMode: function(mode) {
     this._mode = mode;
   },
-  _createCanvasForSave: function() {
+  _debugTime: function(msg) {
+    var now = performance.now();
+    if (!msg) {
+      this._lastDebugTime = now;
+      return;
+    }
+    console.log(msg + ': ' + (now - this._lastDebugTime));
+    this._lastDebugTime = now;
+  },
+  _getBufferPixelsForSave: function() {
     var pixels = new Uint8Array(this._frameBufferForEdit0.width * this._frameBufferForEdit0.height * 4);
+    this._debugTime('new Uint8Array');
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._frameBufferForEdit0.f);
+    this._debugTime('bindFramebuffer');
     this._gl.readPixels(0, 0, this._frameBufferForEdit0.width, this._frameBufferForEdit0.height, this._gl.RGBA, this._gl.UNSIGNED_BYTE, pixels);
+    this._debugTime('readPixels');
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
-
+    this._debugTime('bindFramebuffer');
+    return pixels;
+  },
+  _createCanvasForSave: function() {
+    var pixels = this._getBufferPixelsForSave();
     var canvas = document.createElement("canvas");
     document.body.appendChild(canvas);
     canvas.width = this._frameBufferForEdit0.width;
     canvas.height = this._frameBufferForEdit0.height;
     var length = canvas.width * canvas.height * 4;
+    this._debugTime('create canvas');
     var context = canvas.getContext("2d");
+    this._debugTime('getContext');
     var image = context.createImageData(canvas.width, canvas.height);
+    this._debugTime('createImageData');
     image.data.set(pixels);
+    this._debugTime('image.data.set');
     context.putImageData(image, 0, 0);
+    this._debugTime('putImageData');
     return canvas;
   },
-  getDataURL: function(type) {
-    return this._createCanvasForSave().toDataURL(type);
+  _getDataURL: function(type) {
+    var canvas = this._createCanvasForSave();
+    var url = canvas.toDataURL(type);
+    this._debugTime('toDataURL');
+    return url;
+  },
+  save: function() {
+    if (true) {
+      this._debugTime();
+      var pixels = this._getBufferPixelsForSave();
+      var jpegEnc = new JPEGEncoder();
+      this._debugTime('JPEGEncoder');
+      var jpegUri = jpegEnc.encode({
+        width: this._frameBufferForEdit0.width,
+        height: this._frameBufferForEdit0.height,
+        data: pixels
+      }, 70);
+      this._debugTime('jpegEnc.encode');
+
+      var type = 'image/jpeg';
+      var a = document.createElement('a');
+      this._debugTime('createElement');
+      a.href = jpegUri;
+      document.body.appendChild(a);
+      this._debugTime('appendChild');
+      a.download = "image.jpg";
+      this._debugTime('download');
+      a.click();
+      this._debugTime('click');
+    } else {
+      var now = performance.now();
+      this._debugTime();
+      var type = 'image/jpeg';
+      var a = document.createElement('a');
+      this._debugTime('createElement');
+      a.href = this._getDataURL(type);
+      document.body.appendChild(a);
+      this._debugTime('appendChild');
+      a.download = "image.jpg";
+      this._debugTime('download');
+      this._debugTime('sleep');
+      a.click();
+      this._debugTime('click');
+      console.log((performance.now() - now));
+    }
   },
   _createCosTableTexture: function(width) {
     var canvas = document.createElement("canvas");
@@ -373,8 +436,8 @@ MirrorView.prototype = {
   _setScale: function(scale) {
     if (scale > 30)
       scale = 30;
-    if (scale < 0.005)
-      scale = 0.005;
+    if (scale < 1)
+      scale = 1;
     this._scale = scale;
   },
   _onMouseWheel: function(event) {
@@ -524,7 +587,6 @@ MirrorView.prototype = {
     this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
     if (mode == 2) {
       this._gl.disable(this._gl.BLEND);
-
     }
     this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, null);
   },
@@ -672,10 +734,6 @@ MirrorView.prototype = {
     this._gl.activeTexture(this._gl.TEXTURE1);
     this._gl.bindTexture(this._gl.TEXTURE_2D, this._frameBuffer.t);
     this._gl.uniform1i(this._texture1_loc, 1);
-
-    this._gl.activeTexture(this._gl.TEXTURE2);
-    this._gl.bindTexture(this._gl.TEXTURE_2D, this._frameBufferForEdit0.t);
-    this._gl.uniform1i(this._texture2_loc, 2);
 
     this._gl.viewport(0, 0, this._gl.drawingBufferWidth, this._gl.drawingBufferHeight);
     this._gl.drawArrays(this._gl.TRIANGLES, 0, 6);
@@ -844,13 +902,7 @@ MenuController.prototype = {
   },
   _onSaveButtonClick: function() {
       this._saveButton.disabled = true;
-      var type = 'image/jpeg';
-      var a = document.createElement('a');
-      a.href = this._view.getDataURL(type);
-      this._savedURL = undefined;
-      document.body.appendChild(a);
-      a.download = "image.jpg";
-      a.click();
+      this._view.save();
       this._saveButton.disabled = false;
   }
 };
@@ -937,13 +989,6 @@ float sinX(float x) {
   return cosX(x - PI / 2.0);
 }
 void main() {
-  /*
-   float lon = atan(result.x, result.z);
-   float lat = atan(result.y, length(vec3(result.x, 0, result.z)));
-   vec2 texPos = vec2(lon / PI2 + 0.5, - lat / PI + 0.5);
-   vec4 overlayColor = texture2D(texture1, texPos);
-  */
-
   float lon = (gl_FragCoord.x / frameBufferSize.x - 0.5) * PI2;
   float lat = (- gl_FragCoord.y / frameBufferSize.y + 0.5) * PI;
   vec3 pos_vec = rotateY(sinX(lon), cosX(lon), rotateX(sinX(-lat), cosX(-lat), vec3(0.0, 0.0, 1.0)));
@@ -986,7 +1031,6 @@ void main() {
 #define PI2 6.2831850718
 precision highp float;
 
-uniform int mode;
 uniform mat4 camRot;
 
 uniform float ballSize;
@@ -994,7 +1038,6 @@ uniform float scale;
 
 uniform sampler2D texture0;
 uniform sampler2D texture1;
-uniform sampler2D texture2;
 uniform vec2 dispSize;
 
 vec3 rotateX(float s, float c, vec3 p){
@@ -1007,8 +1050,6 @@ vec3 rotateZ(float s, float c, vec3 p){
   return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
 }
 void main() {
-//  gl_FragColor = texture2D(texture0, gl_FragCoord.xy/ dispSize.xy * vec2(1.0, -1.0));
-//  return;
   vec2 v;
   v = vec2((gl_FragCoord.x - 0.5*dispSize.x) / (dispSize.y * scale), (gl_FragCoord.y - 0.5 * dispSize.y)/ (dispSize.y * scale));
   float v2;
