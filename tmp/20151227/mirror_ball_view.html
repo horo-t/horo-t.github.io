@@ -760,6 +760,8 @@ MenuController.prototype = {
     this._editButton.addEventListener('click', this._onEditButtonClick.bind(this), false);
     this._saveButton = document.getElementById("save-button");
     this._saveButton.addEventListener('click', this._onSaveButtonClick.bind(this), false);
+    this._editButton.disabled = true;
+    this._saveButton.disabled = true;
   },
   getEditMode: function(mode) {
     return this._edit_mode;
@@ -804,12 +806,16 @@ MenuController.prototype = {
           if (img.complete) {
             this._view.loadImage(img, poseInfo);
             this._openButton.disabled = false;
+            this._editButton.disabled = false;
+            this._saveButton.disabled = false;
             document.body.removeChild(fileInput);
             return;
           }
           img.addEventListener('load', (function () {
             this._view.loadImage(img, poseInfo);
             this._openButton.disabled = false;
+            this._editButton.disabled = false;
+            this._saveButton.disabled = false;
             document.body.removeChild(fileInput);
           }).bind(this));
         }).bind(this);
@@ -891,8 +897,12 @@ MenuController.prototype = {
     this._setEditMode(this._getNextEditMode());
   },
   _onSaveButtonClick: function() {
+      this._openButton.disabled = true;
+      this._editButton.disabled = true;
       this._saveButton.disabled = true;
       this._view.save();
+      this._openButton.disabled = false;
+      this._editButton.disabled = false;
       this._saveButton.disabled = false;
   }
 };
