@@ -220,7 +220,6 @@ MirrorView.prototype = {
   	this._render();
   },
   loadImage: function(img, poseInfo) {
-    console.log(JSON.stringify(poseInfo));
     this._poseInfo = poseInfo;
     if (!isPowOfTwo(img.width) || !isPowOfTwo(img.height)) {
       var c = document.createElement('canvas');
@@ -762,6 +761,16 @@ MenuController.prototype = {
     this._saveButton.addEventListener('click', this._onSaveButtonClick.bind(this), false);
     this._editButton.disabled = true;
     this._saveButton.disabled = true;
+    this._registerSW();
+  },
+  _registerSW: function() {
+    if (!navigator.serviceWorker)
+      return;
+    navigator.serviceWorker.register('./sw.js', {scope: './'});
+    navigator.serviceWorker.addEventListener('message', function(msg) {
+        if (msg.data == 'reload')
+          location.reload();
+      }, false);
   },
   getEditMode: function(mode) {
     return this._edit_mode;
