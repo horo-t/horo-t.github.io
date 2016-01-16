@@ -1,4 +1,6 @@
 /*
+  Added XMP support by Tsuyoshi Horo, SphereBlue.com, 1/2016.
+  ---------
   Basic GUI blocking jpeg encoder ported to JavaScript and optimized by
   Andreas Ritter, www.bytestrom.eu, 11/2009.
   Example usage is given at the bottom of this file.
@@ -587,6 +589,18 @@ function JPEGEncoder(quality) {
             // Add JPEG headers
             writeWord(0xFFD8); // SOI
             writeAPP0();
+            if (image.xmp) {
+              var xap = "http://ns.adobe.com/xap/1.0/\0";
+              writeWord(0xFFE1); // marker
+              writeWord(image.xmp.length + xap.length + 3);       // length
+              for (var i=0; i<xap.length; i++) {
+                  writeByte(xap.charCodeAt(i));
+              }
+              for (var i=0; i<image.xmp.length; i++) {
+                  writeByte(image.xmp.charCodeAt(i));
+              }
+              writeByte(0);
+            }
             writeDQT();
             writeSOF0(image.width,image.height);
             writeDHT();

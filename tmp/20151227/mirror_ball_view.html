@@ -1,8 +1,12 @@
 <html>
 <head>
-<title>Mirror ball view</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <meta name="description" content="Sphere Blur">
+    <meta name="keywords" content="Sphere,Blur,Theta,360,image,editor">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Sphere Blur</title>
 <style>
 body {
   background-color: #000000;
@@ -71,6 +75,10 @@ body {
     left: 80px;
     background: url(img/ic_save_black_24px.svg) left top no-repeat;
 }
+#fileInput {
+    width: 0;
+    height: 0;
+}
 .edit-rotate {
     background: url(img/ic_loop_black_24px.svg) left top no-repeat;
 }
@@ -98,7 +106,7 @@ var MirrorView = function() {
   this._lon = 0;
   this._lat = 0;
   this._ballSize = 0.05;
-  this._scale = 1.0;
+  this._scale = 3.0;
   this._mouseTracking = false;
   this._mouseDownPosX = 0;
   this._mouseDownPosY = 0;
@@ -211,11 +219,9 @@ MirrorView.prototype = {
 
   	this._render();
   },
-  setPoseInfo: function(poseInfo) {
+  loadImage: function(img, poseInfo) {
     console.log(JSON.stringify(poseInfo));
     this._poseInfo = poseInfo;
-  },
-  loadImage: function(img) {
     if (!isPowOfTwo(img.width) || !isPowOfTwo(img.height)) {
       var c = document.createElement('canvas');
       c.width = nearestPowOfTwo(img.width);
@@ -236,7 +242,6 @@ MirrorView.prototype = {
   	this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.REPEAT);
   	this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.REPEAT);
     this._gl.bindTexture(this._gl.TEXTURE_2D, null);
-    //this._createBluredFrame();
     this._executeBlureFilter(this._texture, null, this._frameBufferForEdit0.f, 0);
   },
   setEditMode: function(mode) {
@@ -262,69 +267,61 @@ MirrorView.prototype = {
     this._debugTime('bindFramebuffer');
     return pixels;
   },
-  _createCanvasForSave: function() {
-    var pixels = this._getBufferPixelsForSave();
-    var canvas = document.createElement("canvas");
-    document.body.appendChild(canvas);
-    canvas.width = this._frameBufferForEdit0.width;
-    canvas.height = this._frameBufferForEdit0.height;
-    var length = canvas.width * canvas.height * 4;
-    this._debugTime('create canvas');
-    var context = canvas.getContext("2d");
-    this._debugTime('getContext');
-    var image = context.createImageData(canvas.width, canvas.height);
-    this._debugTime('createImageData');
-    image.data.set(pixels);
-    this._debugTime('image.data.set');
-    context.putImageData(image, 0, 0);
-    this._debugTime('putImageData');
-    return canvas;
-  },
-  _getDataURL: function(type) {
-    var canvas = this._createCanvasForSave();
-    var url = canvas.toDataURL(type);
-    this._debugTime('toDataURL');
-    return url;
+  _createXMP: function() {
+    var w = this._frameBufferForEdit0.width;
+    var h = this._frameBufferForEdit0.height;
+    var heading = 0;
+    var pitch = 0;
+    var roll = 0;
+    if (this._poseInfo) {
+      heading = this._poseInfo.heading;
+      pitch = this._poseInfo.pitch;
+      roll = this._poseInfo.roll;
+    }
+    var xmp =
+      '<?xpacket begin="ï»¿" id="W5M0MpCehiHzreSzNTczkc9d"?>' +
+      '<x:xmpmeta xmlns:x="adobe:ns:meta/" xmptk="Sphere Blur">' +
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">' +
+          '<rdf:Description rdf:about="" xmlns:GPano="http://ns.google.com/photos/1.0/panorama/">' +
+          '<GPano:ProjectionType>equirectangular</GPano:ProjectionType>' +
+          '<GPano:UsePanoramaViewer>True</GPano:UsePanoramaViewer>' +
+          '<GPano:CroppedAreaImageWidthPixels>' + w + '</GPano:CroppedAreaImageWidthPixels>' +
+          '<GPano:CroppedAreaImageHeightPixels>' + h + '</GPano:CroppedAreaImageHeightPixels>' +
+          '<GPano:FullPanoWidthPixels>' + w + '</GPano:FullPanoWidthPixels>' +
+          '<GPano:FullPanoHeightPixels>' + h + '</GPano:FullPanoHeightPixels>' +
+          '<GPano:CroppedAreaLeftPixels>0</GPano:CroppedAreaLeftPixels>' +
+          '<GPano:CroppedAreaTopPixels>0</GPano:CroppedAreaTopPixels>' +
+          '<GPano:PoseHeadingDegrees>' + heading + '</GPano:PoseHeadingDegrees>' +
+          '<GPano:PosePitchDegrees>' + pitch + '</GPano:PosePitchDegrees>' +
+          '<GPano:PoseRollDegrees>' + roll + '</GPano:PoseRollDegrees>' +
+          '</rdf:Description>' +
+        '</rdf:RDF>' +
+      '</x:xmpmeta>' +
+      '<?xpacket end="r"?>';
+    return xmp;
   },
   save: function() {
-    if (true) {
-      this._debugTime();
-      var pixels = this._getBufferPixelsForSave();
-      var jpegEnc = new JPEGEncoder();
-      this._debugTime('JPEGEncoder');
-      var jpegUri = jpegEnc.encode({
-        width: this._frameBufferForEdit0.width,
-        height: this._frameBufferForEdit0.height,
-        data: pixels
-      }, 70);
-      this._debugTime('jpegEnc.encode');
-
-      var type = 'image/jpeg';
-      var a = document.createElement('a');
-      this._debugTime('createElement');
-      a.href = jpegUri;
-      document.body.appendChild(a);
-      this._debugTime('appendChild');
-      a.download = "image.jpg";
-      this._debugTime('download');
-      a.click();
-      this._debugTime('click');
-    } else {
-      var now = performance.now();
-      this._debugTime();
-      var type = 'image/jpeg';
-      var a = document.createElement('a');
-      this._debugTime('createElement');
-      a.href = this._getDataURL(type);
-      document.body.appendChild(a);
-      this._debugTime('appendChild');
-      a.download = "image.jpg";
-      this._debugTime('download');
-      this._debugTime('sleep');
-      a.click();
-      this._debugTime('click');
-      console.log((performance.now() - now));
-    }
+    this._debugTime();
+    var pixels = this._getBufferPixelsForSave();
+    var jpegEnc = new JPEGEncoder();
+    this._debugTime('JPEGEncoder');
+    var jpegUri = jpegEnc.encode({
+      width: this._frameBufferForEdit0.width,
+      height: this._frameBufferForEdit0.height,
+      data: pixels,
+      xmp: this._createXMP()
+    }, 70);
+    this._debugTime('jpegEnc.encode');
+    var type = 'image/jpeg';
+    var a = document.createElement('a');
+    this._debugTime('createElement');
+    a.href = jpegUri;
+    document.body.appendChild(a);
+    this._debugTime('appendChild');
+    a.download = "image.jpg";
+    this._debugTime('download');
+    a.click();
+    this._debugTime('click');
   },
   _createCosTableTexture: function(width) {
     var canvas = document.createElement("canvas");
@@ -436,8 +433,8 @@ MirrorView.prototype = {
   _setScale: function(scale) {
     if (scale > 30)
       scale = 30;
-    if (scale < 1)
-      scale = 1;
+    if (scale < 1.5)
+      scale = 1.5;
     this._scale = scale;
   },
   _onMouseWheel: function(event) {
@@ -778,7 +775,7 @@ MenuController.prototype = {
       this._view.setEditMode(mode);
     }
   },
-  _getNestEditMode: function() {
+  _getNextEditMode: function() {
     for (var i = 0; i < this._EDIT_MODES.length; ++i) {
       if (this._EDIT_MODES[i] == this._edit_mode) {
         return this._EDIT_MODES[(i + 1) % this._EDIT_MODES.length];
@@ -790,7 +787,7 @@ MenuController.prototype = {
     var fileInput = document.createElement('input');
     fileInput.id = 'fileInput';
     fileInput.type = 'file';
-    fileInput.accept = 'image/jpeg, image/gif, image/png';
+    fileInput.accept = 'image/jpeg';
     fileInput.name = 'files[]';
     fileInput.addEventListener('change', (function () {
         if (fileInput.files.length == 0) {
@@ -798,34 +795,27 @@ MenuController.prototype = {
         }
         this._openButton.disabled = true;
         var img = document.createElement("img");
-
-        var fr = new FileReader();
-        fr.onload = (function(e) {
-          img.src = e.target.result;
+        var fr_data = new FileReader();
+        fr_data.onload = (function(e) {
+          var arrayBuffer = e.target.result;
+          var poseInfo = this._getPoseInfo(arrayBuffer);
+          var blob = new Blob([arrayBuffer], {type: 'image/jpeg'});
+          img.src = URL.createObjectURL(blob);
           if (img.complete) {
-            this._view.loadImage(img);
+            this._view.loadImage(img, poseInfo);
             this._openButton.disabled = false;
             document.body.removeChild(fileInput);
             return;
           }
           img.addEventListener('load', (function () {
-            this._view.loadImage(img);
+            this._view.loadImage(img, poseInfo);
             this._openButton.disabled = false;
             document.body.removeChild(fileInput);
           }).bind(this));
         }).bind(this);
-        fr.onerror = (function() {
+        fr_data.onerror = (function() {
           this._openButton.disabled = false;
           document.body.removeChild(fileInput);
-        })
-        fr.readAsDataURL(fileInput.files[0]);
-
-        var fr_data = new FileReader();
-        fr_data.onload = (function(e) {
-          var poseInfo = this._getPoseInfo(e.target.result);
-          if (poseInfo) {
-            this._view.setPoseInfo(poseInfo);
-          }
         }).bind(this);
         fr_data.readAsArrayBuffer(fileInput.files[0]);
 
@@ -898,7 +888,7 @@ MenuController.prototype = {
     return null;
   },
   _onEditButtonClick: function() {
-    this._setEditMode(this._getNestEditMode());
+    this._setEditMode(this._getNextEditMode());
   },
   _onSaveButtonClick: function() {
       this._saveButton.disabled = true;
@@ -926,7 +916,6 @@ uniform float ySize;
 uniform float yBase;
 void main() {
   gl_Position = vec4(pos.x, pos.y*ySize+ yBase, 0, 1);
-//  gl_Position = vec4(pos, 0, 1);
 }
 // ]]></script>
 <script id="fragment-shader-for-frame-buffer" type="x-shader/x-fragment">// <![CDATA[
@@ -945,28 +934,6 @@ vec3 rotateX(float s, float c, vec3 p){
 vec3 rotateY(float s, float c, vec3 p){
   return vec3(c * p.x + s * p.z, p.y, - s * p.x + c * p.z);
 }
-vec3 rotateZ(float s, float c, vec3 p){
-  return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
-}
-float sinf(float x)
-{
-  x*=0.159155;
-  x-=floor(x);
-  float xx=x*x;
-  float y=-6.87897;
-  y=y*xx+33.7755;
-  y=y*xx-72.5257;
-  y=y*xx+80.5874;
-  y=y*xx-41.2408;
-  y=y*xx+6.28077;
-  return x*y;
-}
-
-float cosf(float x)
-{
-  return sinf(x+1.5708);
-}
-
 float cosX(float x) {
   float signValue = 1.0;
   x = abs(x) / PI;
@@ -1040,12 +1007,6 @@ uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform vec2 dispSize;
 
-vec3 rotateX(float s, float c, vec3 p){
-  return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
-}
-vec3 rotateY(float s, float c, vec3 p){
-  return vec3(c * p.x + s * p.z, p.y, - s * p.x + c * p.z);
-}
 vec3 rotateZ(float s, float c, vec3 p){
   return vec3(c * p.x - s * p.y, s * p.x + c * p.y, p.z);
 }
