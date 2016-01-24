@@ -1,0 +1,43 @@
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<title>Sphere Blur</title>
+<style>
+#fileInput {
+    width: 0;
+    height: 0;
+}
+</style>
+<script>
+window.addEventListener('load', init, false);
+function init() {
+  var openButton = document.getElementById("open-button");
+  openButton.addEventListener('click', (function() {
+    var fileInput = document.createElement('input');
+    fileInput.id = 'fileInput';
+    fileInput.type = 'file';
+    fileInput.accept = 'video/*';
+    fileInput.name = 'files[]';
+    fileInput.addEventListener('change', (function () {
+        if (fileInput.files.length == 0) {
+          document.body.removeChild(fileInput);
+          return;
+        }
+        var url = URL.createObjectURL(fileInput.files[0]);
+        var video = document.createElement('video');
+        video.autoplay = true;
+        video.src = url;
+        video.addEventListener('ended', (function() {
+            video.play();
+          }).bind(this), false);
+        document.body.appendChild(video);
+        document.body.removeChild(fileInput);
+      }).bind(this), false);
+    document.body.appendChild(fileInput);
+    fileInput.click();
+  }).bind(this), false);
+}
+</script>
+</head>
+<body>
+<button id="open-button" class="button">Open</button>
+</body>
