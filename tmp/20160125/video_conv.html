@@ -1,0 +1,65 @@
+<script>
+
+window.addEventListener('load', init, false);
+function init() {
+  var openButton = document.getElementById("open-button");
+  openButton.addEventListener('click', (function() {
+
+    var fileInput = document.createElement('input');
+    fileInput.id = 'fileInput';
+    fileInput.type = 'file';
+    fileInput.accept = 'video/*';
+    fileInput.name = 'files[]';
+    fileInput.addEventListener('change', (function () {
+        if (fileInput.files.length == 0) {
+          document.body.removeChild(fileInput);
+          return;
+        }
+        var url = URL.createObjectURL(fileInput.files[0]);
+        var video = document.createElement('video');
+
+        var canvas = document.createElement('canvas');
+        canvas.height = video.videoHeight / 4;
+        canvas.width = video.videoWidth / 4;
+        document.body.appendChild(canvas);
+        setInterval(function(){
+          canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+        }, 1000/30);
+
+        video.addEventListener('canplay', (function() {
+          console.log('canplay');
+        }).bind(this), false);
+        video.addEventListener('ended', (function() {
+          console.log('ended');
+          video.play();
+        }).bind(this), false);
+
+        video.addEventListener('canplaythrough', (function() {
+          console.log('videoHeight: ' + video.videoHeight);
+          console.log('videoWidth: ' + video.videoWidth);
+          canvas.height = video.videoHeight / 4;
+          canvas.width = video.videoWidth / 4;
+          console.log('canplaythrough');
+          console.log('seekable.length: ' + video.seekable.length);
+          for (var i = 0; i < video.seekable.length; ++i) {
+            console.log(' ' + i + ': ' + video.seekable.start(i) + ' - ' + video.seekable.end(i));
+          }
+          video.play();
+        }).bind(this), false);
+        video.addEventListener('load', (function() {
+          console.log('load');
+        }).bind(this), false);
+        video.src = url;
+        self.v = video;
+        //document.body.appendChild(video);
+        document.body.removeChild(fileInput);
+        console.log(url);
+      }).bind(this), false);
+    document.body.appendChild(fileInput);
+    fileInput.click();
+  }).bind(this), false);
+}
+</script>
+<body>
+<button id="open-button" class="button"></button>
+</body>
