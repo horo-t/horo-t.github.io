@@ -34,8 +34,6 @@ function init() {
         video.addEventListener('canplaythrough', (function() {
           console.log('videoHeight: ' + video.videoHeight);
           console.log('videoWidth: ' + video.videoWidth);
-          canvas.height = video.videoHeight;// / 4;
-          canvas.width = video.videoWidth;// / 4;
           console.log('canplaythrough');
           console.log('seekable.length: ' + video.seekable.length);
           for (var i = 0; i < video.seekable.length; ++i) {
@@ -57,6 +55,8 @@ function init() {
   var time = 0;
   var id = 0;
   send1Button.addEventListener('click', (function() {
+    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth;
     var context = canvas.getContext("2d");
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     imageData = context.getImageData(0, 0, canvas.width, canvas.height);
