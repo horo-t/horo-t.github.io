@@ -3,28 +3,25 @@
 window.addEventListener('load', init, false);
 function init() {
   var openButton = document.getElementById("open-button");
+  var send1Button = document.getElementById("send1-button");
+  var canvas = document.createElement('canvas');
+  var video = document.createElement('video');
+  var worker = new Worker("video_conv_worker.js");
+  window.w = worker;
+  document.body.appendChild(video);
+  document.body.appendChild(canvas);
+  video.controls = true;
   openButton.addEventListener('click', (function() {
-
     var fileInput = document.createElement('input');
     fileInput.id = 'fileInput';
     fileInput.type = 'file';
     fileInput.accept = 'video/*';
     fileInput.name = 'files[]';
     fileInput.addEventListener('change', (function () {
-        if (fileInput.files.length == 0) {
-          document.body.removeChild(fileInput);
+        document.body.removeChild(fileInput);
+        if (fileInput.files.length == 0)
           return;
-        }
         var url = URL.createObjectURL(fileInput.files[0]);
-        var video = document.createElement('video');
-
-        var canvas = document.createElement('canvas');
-        canvas.height = video.videoHeight / 4;
-        canvas.width = video.videoWidth / 4;
-        document.body.appendChild(canvas);
-        setInterval(function(){
-          canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-        }, 1000/30);
 
         video.addEventListener('canplay', (function() {
           console.log('canplay');
@@ -37,8 +34,8 @@ function init() {
         video.addEventListener('canplaythrough', (function() {
           console.log('videoHeight: ' + video.videoHeight);
           console.log('videoWidth: ' + video.videoWidth);
-          canvas.height = video.videoHeight / 4;
-          canvas.width = video.videoWidth / 4;
+          canvas.height = video.videoHeight;// / 4;
+          canvas.width = video.videoWidth;// / 4;
           console.log('canplaythrough');
           console.log('seekable.length: ' + video.seekable.length);
           for (var i = 0; i < video.seekable.length; ++i) {
@@ -51,15 +48,36 @@ function init() {
         }).bind(this), false);
         video.src = url;
         self.v = video;
-        //document.body.appendChild(video);
-        document.body.removeChild(fileInput);
         console.log(url);
       }).bind(this), false);
     document.body.appendChild(fileInput);
     fileInput.click();
   }).bind(this), false);
+
+  var time = 0;
+  var id = 0;
+  send1Button.addEventListener('click', (function() {
+    var context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    time = performance.now();
+    worker.postMessage({id: ++id, imageData:imageData}, [imageData.data.buffer]);
+  }).bind(this), false);
+  worker.addEventListener('message', function(event) {
+    var div = document.createElement('span');
+    div.appendChild(document.createTextNode('Time (ms): ' + (performance.now() - time)));
+    document.body.appendChild(div);
+    div = document.createElement('span');
+    div.appendChild(document.createTextNode('Data size: ' + (event.data.data.length)));
+    document.body.appendChild(div);
+    var img = document.createElement('img');
+    img.src = 'data:image/gif;base64,'+window.btoa(event.data.data);
+    document.body.appendChild(img);
+  }, false)
+
 }
 </script>
 <body>
-<button id="open-button" class="button"></button>
+<button id="open-button" class="button">open</button>
+<button id="send1-button" class="button">send1</button>
 </body>
