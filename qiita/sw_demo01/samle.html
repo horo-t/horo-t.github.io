@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<title>Load TIFF image using ServiceWorker and emscripten</title>
+<script>
+navigator.serviceWorker.register('./sw.js', {scope: './'});
+</script>
+<img src='test.png'>
