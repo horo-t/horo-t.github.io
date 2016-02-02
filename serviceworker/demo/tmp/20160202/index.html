@@ -1,0 +1,21 @@
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+</script>
+<h1>Large script loading while the main thread is busy</h1>
+<input type="button" onclick="register()" value="register SW"></br>
+<a href="./test.html#small">test.html#small</a></br>
+<a href="./test.html#1m">test.html#1m</a></br>
+<a href="./test.html#2m">test.html#2m</a></br>
+<a href="./test.html#3m">test.html#3m</a></br>
+<a href="./test.html#4m">test.html#4m</a></br>
+<a href="./test.html#5m">test.html#5m</a></br>

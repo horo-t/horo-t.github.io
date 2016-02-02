@@ -1,0 +1,39 @@
+<body>
+<script>
+var loadStartTime = performance.now();
+var stopped = false;
+function log(text) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(text));
+  document.getElementById('disp').appendChild(div);
+}
+
+function done() {
+  stopped = true;
+  var time = performance.now() - loadStartTime;
+  log('Script loaded: ' + time);
+}
+</script>
+<div id="disp"></div>
+</body>
+<script>
+var script = document.createElement('script');
+script.src = 'dummy_' + location.hash.substr(1) + '.js';
+script.async = true;
+log('loading ' + script.src);
+document.body.appendChild(script);
+
+var count = 0;
+
+function buzySleep() {
+  if (stopped)
+    return;
+  ++count
+  log('Sleeping [' + count + ']');
+  var loopStartTime = performance.now();
+  while (performance.now() - loopStartTime < 1000);
+  setTimeout(buzySleep, 0);
+}
+
+buzySleep();
+</script>
