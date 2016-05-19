@@ -1,0 +1,7 @@
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js?1", {scope: "./scope1/"});
+  navigator.serviceWorker.register("./sw.js?2", {scope: "./scope2/"});
+}
+</script>
+<input type="button" onclick="register()" value="Register 2 SWs">
