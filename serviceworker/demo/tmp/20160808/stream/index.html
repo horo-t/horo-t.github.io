@@ -1,0 +1,14 @@
+
+<script>
+function registerSW() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
+    .then(function(registration) {
+        console.log(registration);
+      })
+    .catch(function(error) {
+        console.log(error);
+      });
+}
+</script>
+<input type="button" onclick="registerSW()" value="register SW">
+<a href="./scope/content.html">test</a>
