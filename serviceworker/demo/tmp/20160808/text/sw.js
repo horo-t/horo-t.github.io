@@ -9,7 +9,7 @@ self.addEventListener('fetch', event => {
       return;
     event.respondWith(
       Promise.all(
-          [caches.match('header'), fetch(url + '.txt'), caches.match('header')])
+          [caches.match('header'), fetch(url + '.txt'), caches.match('footer')])
         .then(responses => Promise.all(responses.map(res => res.text())))
         .then(txt_list =>
           new Response(
