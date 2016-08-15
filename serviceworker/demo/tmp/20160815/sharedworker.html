@@ -1,7 +1,12 @@
 <script>
-var sw = undefined;
-function startSharedWorker() {
-  sw = new SharedWorker('./sharedworker.js');
+var sw1 = undefined;
+var sw2 = undefined;
+function startSharedWorker1() {
+  sw1 = new SharedWorker('./sharedworker.js?1');
+}
+function startSharedWorker2() {
+  sw2 = new SharedWorker('./sharedworker.js?2');
 }
 </script>
-<input type="button" onclick="startSharedWorker()" value="startSharedWorker">
+<input type="button" onclick="startSharedWorker1()" value="startSharedWorker1">
+<input type="button" onclick="startSharedWorker2()" value="startSharedWorker2">
