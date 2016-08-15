@@ -1,0 +1,7 @@
+<script>
+var sw = undefined;
+function startSharedWorker() {
+  sw = new SharedWorker('./sharedworker.js');
+}
+</script>
+<input type="button" onclick="startSharedWorker()" value="startSharedWorker">
