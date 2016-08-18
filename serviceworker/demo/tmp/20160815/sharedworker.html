@@ -7,6 +7,19 @@ function startSharedWorker1() {
 function startSharedWorker2() {
   sw2 = new SharedWorker('./sharedworker.js?2');
 }
+
+function addEmptyUnloadListener() {
+  window.addEventListener("beforeunload", function (e) {
+  });
+}
+
+function addUnloadListener() {
+  window.addEventListener("beforeunload", function (e) {
+    e.returnValue = "wait please";
+  });
+}
 </script>
 <input type="button" onclick="startSharedWorker1()" value="startSharedWorker1">
 <input type="button" onclick="startSharedWorker2()" value="startSharedWorker2">
+<input type="button" onclick="addEmptyUnloadListener()" value="addEmptyUnloadListener">
+<input type="button" onclick="addUnloadListener()" value="addUnloadListener">
