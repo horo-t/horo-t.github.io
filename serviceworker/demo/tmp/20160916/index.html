@@ -1,0 +1,21 @@
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+</script>
+<input type="button" onclick="register()" value="Click this">
+<a href="./scope/test">test</a>
+<a href="./scope/fallback">fallback</a>
+<a href="./scope/early0">early0</a>
+<a href="./scope/early1">early1</a>
+<a href="./scope/early2">early2</a>
+<a href="./scope/early3">early3</a>
+<a href="./scope/early4">early4</a>
