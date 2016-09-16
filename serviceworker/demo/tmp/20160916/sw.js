@@ -8,11 +8,11 @@ self.addEventListener('fetch', function(event) {
     console.log("event.preloadResponse is null");
     return;
   }
-  if (event.request.url.indexOf('test') != -1) {
+  if (event.request.url.indexOf('test.html') != -1) {
     event.respondWith(new Response('Hello world'));
-  } else if (event.request.url.indexOf('early0') != -1) {
+  } else if (event.request.url.indexOf('early0.html') != -1) {
     console.log(event.preloadResponse);
-  } else if (event.request.url.indexOf('early1') != -1) {
+  } else if (event.request.url.indexOf('early1.html') != -1) {
     console.log(event.preloadResponse);
     event.preloadResponse
       .then(r => {
@@ -21,9 +21,9 @@ self.addEventListener('fetch', function(event) {
         })
       .then(text => console.log(text))
       .catch(e => console.log(e));
-  } else if (event.request.url.indexOf('early2') != -1) {
+  } else if (event.request.url.indexOf('early2.html') != -1) {
     event.respondWith(event.preloadResponse);
-  } else if (event.request.url.indexOf('early3') != -1) {
+  } else if (event.request.url.indexOf('early3.html') != -1) {
     event.waitUntil(
       event.preloadResponse
         .then(r => {
@@ -35,7 +35,7 @@ self.addEventListener('fetch', function(event) {
           ee => {
             console.log(ee);
           }));
-  } else if (event.request.url.indexOf('early4') != -1) {
+  } else if (event.request.url.indexOf('early4.html') != -1) {
     event.respondWith(
       event.preloadResponse
         .then(r => {
