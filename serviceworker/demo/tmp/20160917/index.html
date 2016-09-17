@@ -1,9 +1,10 @@
 <script>
 function register() {
-  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
-    .then(function(registration) {
+  Promise.all[
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"}),
+  navigator.serviceWorker.register("./normal_sw.js", {scope: "./normal_scope/"})]
+    .then(function(registrations) {
         alert("OK. Click test");
-        console.log(registration);
       })
     .catch(function(error) {
         alert("error");
@@ -16,5 +17,7 @@ function register() {
 <a href="./scope/respondWith_preloadResponse.html">event.respondWith(event.preloadResponse);</a><br>
 <br>
 <a href="./out_of_scope.html">out of SW scope</a><br>
+<br>
+<a href="./normal_scope/no_respondWith.html">normal SW: No respondWith()</a><br>
 <br>
 <a href="./scope/respondWith_new_Response.html">event.respondWith(new Response());</a><br>
