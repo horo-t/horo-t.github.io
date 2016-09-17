@@ -1,0 +1,17 @@
+<h1>out_of_scope.html</h1>
+<script>
+window.addEventListener('load', function(){
+  function addPerformanceItem(item, value) {
+    if (!Number.isInteger(value) || value == 0)
+      return;
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(
+      item + ': ' +
+      (performance.timing[item] - performance.timing.navigationStart)));
+    document.body.appendChild(div);
+  }
+  for(var item in performance.timing) {
+    addPerformanceItem(item, performance.timing[item])
+  }
+});
+</script>
