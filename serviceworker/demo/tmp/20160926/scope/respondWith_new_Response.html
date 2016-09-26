@@ -4,7 +4,7 @@ window.addEventListener('load', function(){
   var button = document.createElement('button');
   button.appendChild(document.createTextNode('reload'));
   button.addEventListener('click', function(){
-    location.reload();
+    location.href = location.origin + location.pathname + '?' + Math.random();
   });
   document.body.appendChild(button);
 
