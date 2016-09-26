@@ -1,6 +1,13 @@
 <h1>out_of_scope.html</h1>
 <script>
 window.addEventListener('load', function(){
+  var button = document.createElement('button');
+  button.appendChild(document.createTextNode('reload'));
+  button.addEventListener('click', function(){
+    location.reload();
+  });
+  document.body.appendChild(button);
+
   function addPerformanceItem(item, value) {
     if (!Number.isInteger(value) || value == 0)
       return;
