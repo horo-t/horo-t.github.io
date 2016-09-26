@@ -18,15 +18,15 @@ self.addEventListener('install', function(event) {
 
 self.addEventListener('fetch', function(event) {
   console.log(event.request.url);
-  if (!event.preloadResponse) {
-    console.log("event.preloadResponse is null");
+  if (!event.navigationPreload) {
+    console.log("event.navigationPreload is null");
     return;
   }
   if (event.request.url.indexOf('no_respondWith.html') != -1) {
     return;
   }
   if (event.request.url.indexOf('respondWith_preloadResponse.html') != -1) {
-    event.respondWith(event.preloadResponse);
+    event.respondWith(event.navigationPreload);
     return;
   }
   if (event.request.url.indexOf('respondWith_new_Response.html') != -1) {
