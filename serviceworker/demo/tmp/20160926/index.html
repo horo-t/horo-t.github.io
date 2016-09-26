@@ -1,0 +1,23 @@
+<script>
+function register() {
+  Promise.all([
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"}),
+  navigator.serviceWorker.register("./normal_sw.js", {scope: "./normal_scope/"})])
+    .then(function(registrations) {
+        alert("OK. Click test");
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+</script>
+<input type="button" onclick="register()" value="Register SW"><br>
+<a href="./scope/no_respondWith.html">No respondWith()</a><br>
+<a href="./scope/respondWith_preloadResponse.html">event.respondWith(event.preloadResponse);</a><br>
+<br>
+<a href="./out_of_scope.html">out of SW scope</a><br>
+<br>
+<a href="./normal_scope/no_respondWith.html">normal SW: No respondWith()</a><br>
+<br>
+<a href="./scope/respondWith_new_Response.html">event.respondWith(new Response());</a><br>
