@@ -1,8 +1,8 @@
 <script>
 function register() {
-  Promise.all[
+  Promise.all([
   navigator.serviceWorker.register("./sw.js", {scope: "./scope/"}),
-  navigator.serviceWorker.register("./normal_sw.js", {scope: "./normal_scope/"})]
+  navigator.serviceWorker.register("./normal_sw.js", {scope: "./normal_scope/"})])
     .then(function(registrations) {
         alert("OK. Click test");
       })
