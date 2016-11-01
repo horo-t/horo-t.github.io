@@ -1,0 +1,24 @@
+<h1>no_respondWith.html</h1>
+<script>
+window.addEventListener('load', function(){
+  var button = document.createElement('button');
+  button.appendChild(document.createTextNode('reload'));
+  button.addEventListener('click', function(){
+    location.href = location.origin + location.pathname + '?' + Math.random();
+  });
+  document.body.appendChild(button);
+
+  function addPerformanceItem(item, value) {
+    if (!Number.isInteger(value) || value == 0)
+      return;
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(
+      item + ': ' +
+      (performance.timing[item] - performance.timing.navigationStart)));
+    document.body.appendChild(div);
+  }
+  for(var item in performance.timing) {
+    addPerformanceItem(item, performance.timing[item])
+  }
+});
+</script>
