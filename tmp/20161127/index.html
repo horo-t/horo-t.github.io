@@ -1,0 +1,75 @@
+<script src="https://www.gstatic.com/firebasejs/3.6.1/firebase.js"></script>
+<script>
+// Initialize Firebase
+var config = {
+  apiKey: "AIzaSyB-KQEFYfkR2FV4Gip875Gba80p2zltEL0",
+  authDomain: "test-air.firebaseapp.com",
+  databaseURL: "https://test-air.firebaseio.com",
+  storageBucket: "test-air.appspot.com",
+  messagingSenderId: "1012242118379"
+};
+firebase.initializeApp(config);
+
+function loginCheck() {
+  firebase.auth().onAuthStateChanged(function(user) {
+    var elem = document.getElementById('loginOrLogout');
+    if (user) {
+      elem.value = 'logout';
+    } else {
+      elem.value = 'login';
+    }
+  });
+}
+function loginOrLogout() {
+  if (firebase.auth().currentUser) {
+    logout();
+  } else {
+    login();
+  }
+}
+function login() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('https://www.googleapis.com/auth/plus.login');
+  firebase.auth().signInWithRedirect(provider);
+}
+function logout() {
+  firebase.auth().signOut().then(function(){
+    showResult('logout');
+  },function(){
+    showResult('logout error');
+  })
+}
+function showResult(text) {
+  var elem = document.getElementById('currentValueDiv');
+  while (elem.firstChild) {
+    elem.removeChild(elem.firstChild);
+  }
+  var p = document.createElement('p');
+  p.appendChild(document.createTextNode(text));
+  elem.appendChild(p);
+}
+
+function initialize() {
+  loginCheck();
+
+  firebase.database().ref('/aircon').on('value', function(snapshot) {
+    showResult(snapshot.val());
+  });
+}
+function airconOn() {
+  firebase.database().ref('aircon').set(true).catch(function(error) {
+    showResult('airconOn: Error');
+  });
+}
+function airconOff() {
+  firebase.database().ref('aircon').set(false).catch(function(error) {
+    showResult('airconOff: Error');
+  });
+}
+window.addEventListener('load', initialize);
+</script>
+
+<input type="button" id='loginOrLogout' onclick="loginOrLogout()" value="">
+<input type="button" onclick="airconOn()" value="on">
+<input type="button" onclick="airconOff()" value="off">
+<div id='currentValueDiv'></div>
