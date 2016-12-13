@@ -11,7 +11,6 @@ function busySleep(millisec)
 busySleep(500);
 
 self.addEventListener('activate', function(event) {
-    console.log(event.registration);
     event.waitUntil(
         self.registration.navigationPreload.enable());
   });
