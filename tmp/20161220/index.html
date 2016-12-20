@@ -1,0 +1,9 @@
+<body>
+<script>
+navigator.webkitTemporaryStorage.queryUsageAndQuota((used, quota) => {
+  var elem = document.createElement('div');
+  elem.appendChild(document.createTextNode(used + ' : ' + quota));
+  document.body.appendChild(elem);
+});
+</script>
+</body>
