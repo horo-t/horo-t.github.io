@@ -1,3 +1,4 @@
+<body>
 <script>
 function testFetch() {
   var request = new Request(
@@ -11,13 +12,21 @@ function testFetch() {
                 ["k","l"]]
     });
 
-  var headersText = ""
+  var headersText = "Original request headers\n"
   for (var header of request.headers) {
     headersText += header[0] + ": " + header[1] + "\n";
   }
-  console.log("Original request headers\n" + headersText);
+  var div = document.createElement("pre");
+  div.appendChild(document.createTextNode(headersText + "\n\n"));
+  console.log(headersText);
 
-  fetch(request);
+  fetch(request)
+    .then(function(res) { return res.text(); })
+    .then(function(text) {
+       div.appendChild(document.createTextNode(text));
+       document.body.appendChild(div);
+    });
 }
 </script>
 <input type="button" onclick="testFetch()" value="Click this">
+</body>
