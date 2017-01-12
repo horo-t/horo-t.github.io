@@ -1,0 +1,23 @@
+<script>
+function testFetch() {
+  var request = new Request(
+    "a",
+    {
+      headers: [["a","b"],
+                ["c","d"],
+                ["e","f"],
+                ["g","h"],
+                ["i","j"],
+                ["k","l"]]
+    });
+
+  var headersText = ""
+  for (var header of request.headers) {
+    headersText += header[0] + ": " + header[1] + "\n";
+  }
+  console.log("Original request headers\n" + headersText);
+
+  fetch(request);
+}
+</script>
+<input type="button" onclick="testFetch()" value="Click this">
