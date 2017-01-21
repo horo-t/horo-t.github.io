@@ -81,15 +81,7 @@ function loadMap() {
       mapOptions);
   var marker = new google.maps.Marker({
     position: new google.maps.LatLng(35.658068, 139.751599),
-    map: map,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      strokeColor: "#00",
-      fillOpacity: 1,
-      fillColor: "#F00",
-      scale: 10,
-      strokeWeight: 2
-    }
+    map: map
   });
 }
 Promise.all([onDOMContentLoadedPromise, onMapLoadPromise]).then(loadMap);
