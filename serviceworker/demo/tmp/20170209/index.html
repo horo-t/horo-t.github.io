@@ -1,0 +1,21 @@
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+function sendMessage() {
+  navigator.serviceWorker.ready.then(reg => {
+    reg.active.postMessage("a");
+  });
+}
+</script>
+<input type="button" onclick="register()" value="register">
+<input type="button" onclick="sendMessage()" value="sendMessage">
+<a href="./scope/test">test</a>
