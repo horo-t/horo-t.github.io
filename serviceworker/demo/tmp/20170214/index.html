@@ -1,0 +1,14 @@
+<script>
+var worker;
+function startWorker() {
+  worker = new Worker('./worker.js');
+  worker.onmessage = function (msg) {
+    console.log(msg.data);
+  }
+}
+function testFetch() {
+  worker.postMessage("test");
+}
+</script>
+<input type="button" onclick="startWorker()" value="startWorker">
+<input type="button" onclick="testFetch()" value="testFetch">
