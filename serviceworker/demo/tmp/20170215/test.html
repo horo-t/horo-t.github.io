@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>test map</title>
+<script>
+"use strict";
+var logbuf = {};
+function log(txt) {
+  if (logbuf[txt]) {
+    return;
+  }
+  logbuf[txt] = true;
+  console.timeStamp(txt);
+  if (window.performance) {
+    var t = Math.floor(window.performance.now()) / 1000;
+    console.log(t.toFixed(3) + ': ' + txt);
+  }
+}
+// log('Start loading');
+var onMapLoad = undefined;
+var onMapLoadPromise = new Promise(function(r) { onMapLoad = r; });
+
+
+var onFirebaseLoad = undefined;
+var onFirebaseLoadPromise = new Promise(function(r) { onFirebaseLoad = r; });
+
+var onDOMContentLoadedPromise = new Promise(function(resolve) {
+  document.addEventListener('DOMContentLoaded', function() { resolve(); })});
+
+// onFirebaseLoadPromise.then(function() { log('Firebase script loaded'); });
+// onMapLoadPromise.then(function() { log('Map script loaded'); });
+// onDOMContentLoadedPromise.then(function() { log('DOM content loaded'); });
+window.addEventListener('load', function() {
+  // log('OnLoad');
+  parent.postMessage(Math.floor(window.performance.now()) / 1000, '*');
+});
+</script>
+<script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js" async onload="onFirebaseLoad()"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.26&key=AIzaSyC6_LWcGHuOak_Y8F_FzlGymrYUOnJNcT4" async defer onload="onMapLoad()"></script>
+<style type="text/css">
+<!--
+.map-container {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 320px;
+  height: 320px;
+  margin: 0px;
+  padding: 0px;
+  z-index: 5;
+}
+#map-canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px
+}
+-->
+</style>
+<script>
+
+function loadMap() {
+  var mapOptions = {
+    zoom: 6,
+    center: new google.maps.LatLng(35.658068, 139.751599),
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    disableDefaultUI: false,
+    streetViewControl: false,
+    panControl: false,
+    zoomControl: false,
+    mapTypeControl: false,
+    scaleControl: false,
+    overviewMapControl: false,
+    mapMaker: false,
+    maxZoom: 15,
+    minZoom: 2,
+    clickableIcons: false,
+    gestureHandling: 'greedy',
+    fullscreenControl: false
+  };
+  var map = new google.maps.Map(
+      document.getElementById('map-canvas'),
+      mapOptions);
+  var marker = new google.maps.Marker({
+    position: new google.maps.LatLng(35.658068, 139.751599),
+    map: map
+  });
+}
+Promise.all([onDOMContentLoadedPromise, onMapLoadPromise]).then(loadMap);
+</script>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+</head>
+<body>
+<div id="main-panel">
+    <div id="map-container" class="map-container">
+      <div id="map-canvas"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

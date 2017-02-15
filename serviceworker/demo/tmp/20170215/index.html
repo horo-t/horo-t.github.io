@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>test map</title>
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./test.html"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+function unregister() {
+  return navigator.serviceWorker.getRegistration("./test.html")
+    .then(function(registration) {
+        if (registration)
+          return registration.unregister();
+      });
+}
+
+var results = [];
+var iframe;
+
+window.addEventListener('message', (event) => {
+    var p = document.getElementById('log');
+    results.push(event.data);
+    var sum = 0.0;
+    for (var i = 0; i < results.length; ++i) {
+      sum += results[i];
+    }
+    var avg = sum / results.length;
+    p.innerText = results.length + ': ' + event.data + '  avg: ' + avg;
+    if (results.length < 100) {
+      document.body.removeChild(iframe);
+      setTimeout(loadIframe, 100);
+    }
+  });
+function test() {
+  loadIframe();
+}
+function loadIframe() {
+  iframe = document.createElement('iframe');
+  iframe.src = './test.html';
+  iframe.width = 320;
+  iframe.height = 320;
+  document.body.appendChild(iframe);
+}
+
+</script>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+</head>
+<body>
+<input type="button" onclick="register()" value="register SW">
+<input type="button" onclick="unregister()" value="unregister SW">
+<input type="button" onclick="test()" value="test">
+<p id="log"></p>
+<br>
+</body>
+</html>
