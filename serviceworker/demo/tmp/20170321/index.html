@@ -1,0 +1,34 @@
+<script>
+var scope = './test.html';
+
+function with_iframe(url) {
+  return new Promise(resolve => {
+      let frame = document.createElement('iframe');
+      frame.src = url;
+      frame.onload = () => { resolve(frame); };
+      document.body.appendChild(frame);
+    });
+}
+
+var iframe_no = 0;
+
+function open_iframe() {
+  ++iframe_no;
+  with_iframe(scope + '?' + iframe_no).then(function(frame) {
+    frame.remove();
+    setTimeout(open_iframe, 1000);
+  });
+}
+
+function start() {
+  navigator.serviceWorker.register("./sw.js", {scope: scope})
+    .then(function(registration) {
+        alert("OK. Click test");
+        open_iframe();
+      })
+    .catch(function(error) {
+        alert("error");
+      });
+}
+</script>
+<input type="button" onclick="start()" value="Click to test">
