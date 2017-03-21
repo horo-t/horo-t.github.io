@@ -1,5 +1,17 @@
 <script>
 var worker;
+
+function registerSW() {
+navigator.serviceWorker.register("./sw.js", {scope: "./"})
+  .then(function(registration) {
+      alert("OK. Click test");
+      console.log(registration);
+    })
+  .catch(function(error) {
+      alert("error");
+      console.log(error);
+    });
+}
 function startWorker() {
   worker = new Worker('./worker.js');
   worker.onmessage = function (msg) {
@@ -7,8 +19,15 @@ function startWorker() {
   }
 }
 function testFetch() {
-  worker.postMessage("test");
+  worker.postMessage("fetch");
+  // var start = Date.now();
+  // while (Date.now() - start < 1000);
+}
+function testSyncXHR() {
+  worker.postMessage("syncXHR");
 }
 </script>
+<input type="button" onclick="registerSW()" value="registerSW">
 <input type="button" onclick="startWorker()" value="startWorker">
 <input type="button" onclick="testFetch()" value="testFetch">
+<input type="button" onclick="testSyncXHR()" value="testSyncXHR">
