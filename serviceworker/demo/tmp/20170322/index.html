@@ -1,0 +1,33 @@
+<script>
+
+function with_iframe(url) {
+  return new Promise(resolve => {
+      let frame = document.createElement('iframe');
+      frame.src = url;
+      frame.onload = () => { resolve(frame); };
+      document.body.appendChild(frame);
+    });
+}
+
+var iframe_no = 0;
+function open_iframe(scope) {
+  ++iframe_no;
+  with_iframe(scope + '?' + iframe_no).then(function(frame) {
+    frame.remove();
+    setTimeout(open_iframe.bind(null, scope), 1000);
+  });
+}
+
+function start(scope) {
+  navigator.serviceWorker.register("./sw.js", {scope: scope})
+    .then(function(registration) {
+        alert("OK. Click test");
+        open_iframe(scope);
+      })
+    .catch(function(error) {
+        alert("error");
+      });
+}
+</script>
+<input type="button" onclick="start('./NoWaitUntil.html')" value="Click to NoWaitUntil test">
+<input type="button" onclick="start('./WaitUntil.html')" value="Click to WaitUntil test"><br>
