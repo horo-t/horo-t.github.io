@@ -7,8 +7,17 @@ self.addEventListener('activate', function(event) {
       ]);
   });
 
-  self.addEventListener('fetch', function(event) {
-    if (event.preloadResponse) {
-      event.respondWith(event.preloadResponse);
-    }
-  });
+self.addEventListener('fetch', function(event) {
+  if (event.preloadResponse) {
+    event.respondWith(event.preloadResponse.then(
+      res => {
+        console.log(res);
+        return res;
+      },
+      err => {
+        console.log(err);
+        return new Response("error");
+      }
+    ));
+  }
+});
