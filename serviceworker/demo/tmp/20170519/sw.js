@@ -10,14 +10,23 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (!event.preloadResponse) {
     console.error('event.preloadResponse not found');
-    event.respondWith(new Response('error'));
-    return;
+    var body = '<div>Navigation preload demo</div>';
+    body += '<h2>event.preloadResponse not found</h2>' +
+            '<div>It is availabe from Chrome 59. ' +
+            'See <a href="//crbug.com/649558">crbug.com/649558</a></div>';
+    event.respondWith(new Response(body,
+                                   {headers: [['content-type', 'text/html']]}));
   }
   event.respondWith(
     event.preloadResponse.then(response => {
       if (!response) {
         console.log('-- Navigation preload is disabled --');
-        return new Response('error');
+        var body = '<div>Navigation preload demo</div>';
+        body += '<h2>Navigation preload is disabled</h2>' +
+                '<div>It is availabe from Chrome 59. ' +
+                'See <a href="//crbug.com/649558">crbug.com/649558</a></div>';
+        return new Response(body,
+                            {headers: [['content-type', 'text/html']]});
       }
       return response.text().then(text => {
         console.log('-- Navigation preload response --');
@@ -37,7 +46,7 @@ self.addEventListener('fetch', event => {
           body += '<pre>' + JSON.stringify(entry, null, 2) + '</pre>';
         }
         return new Response(body,
-                            {headers: [['content-type', 'text/html']]})
+                            {headers: [['content-type', 'text/html']]});
       })
     }));
 });
