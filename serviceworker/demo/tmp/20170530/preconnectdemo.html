@@ -1,0 +1,21 @@
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./"})
+    .then(function(registration) {
+        alert("OK. Click test");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+</script>
+<script src="https://www.google-analytics.com/analytics.js" async></script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<body>
+<img src="https://ssl.gstatic.com/gb/images/i2_2ec824b0.png" width="10" height="10">
+<img src="https://www.google.co.jp/gen_204" width="10" height="10">
+<div style="font-family: 'Roboto', sans-serif;">hello</div>
+<input type="button" onclick="register()" value="Register Service Worker">
+</body>
