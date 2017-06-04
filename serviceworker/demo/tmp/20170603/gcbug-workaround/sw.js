@@ -17,8 +17,8 @@ self.addEventListener('fetch', event => {
   event.respondWith(event.preloadResponse
     .then(response => {
       console.log("preloadResponse resolved");
-      // [HACK] Just to keep .preloadResponse for crbug.com/728013.
-      event.preloadResponse;
+      // [HACK] Just to keep the FetchEvent for crbug.com/728013.
+      event;
       return response;
     }));
   // Need to add --js-flags="--expose-gc" to the flags.
