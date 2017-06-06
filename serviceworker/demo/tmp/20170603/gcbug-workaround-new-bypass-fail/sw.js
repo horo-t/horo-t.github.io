@@ -16,9 +16,6 @@ self.addEventListener('activate', event => {
 self.pendingNavigationRequests = new Set();
 
 function respondWith(event, response) {
-  if (event.request.mode === 'navigate') {
-    self.pendingNavigationRequests.add(event);
-  }
   event.respondWith(
     Promise.resolve(response).then((resp) => {
       if (event.request.mode === 'navigate') {
@@ -30,11 +27,14 @@ function respondWith(event, response) {
 }
 
 self.addEventListener('fetch', event => {
+  if (event.request.mode === 'navigate') {
+    self.pendingNavigationRequests.add(event);
+  }
   console.log("fetch event " + event.request.url);
-  // Need to add --js-flags="--expose-gc" to the flags.
-  setTimeout(_ => {self.gc();}, 0);
   if (event.request.url.indexOf('bypass_sw') != -1) {
     return;
   }
   respondWith(event, event.preloadResponse);
+  // Need to add --js-flags="--expose-gc" to the flags.
+  setTimeout(_ => {self.gc();}, 0);
 });
