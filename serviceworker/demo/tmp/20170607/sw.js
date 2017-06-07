@@ -1,6 +1,6 @@
 self.addEventListener('install', function(event) {
     event.waitUntil(
-      caches.open('A').then(cache => cache.addAll(['sw.js']))
+      caches.open('A').then(cache => cache.addAll(['sw.js', '/']))
     );
   });
 self.addEventListener('fetch', function(event) {
