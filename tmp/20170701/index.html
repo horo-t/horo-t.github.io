@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+      #info {
+      	position: absolute;
+      	top: 0px;
+      	width: 100%;
+      	text-align: left;
+      	z-index: 100;
+      	display:block;
+        color: white
+      }
+      #video {
+      	position: absolute;
+      	top: 10%;
+      	left: 10%;
+      	width: 80%;
+      	height: 80%;
+      	z-index: 100;
+      	display:block;
+        opacity: 0.5;
+      }
+      #opacityRange {
+      	position: absolute;
+      	top: calc(100% - 30px);
+      	left: calc(100% - 120px);
+      	width: 100px;
+      	height: 20px;
+      	z-index: 101;
+      }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script>
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer();
+renderer.setPixelRatio(window.devicePixelRatio || 1);
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+function createBox(color, x, y, z) {
+  var geometry = new THREE.BoxGeometry(x, y, z);
+  var material = new THREE.MeshLambertMaterial( { color: color } );
+  var cube = new THREE.Mesh( geometry, material );
+  return cube;
+}
+var cubes = [];
+cubes.push(createBox(0xff3333,
+                      8.0, 0.1, 0.1));
+cubes.push(createBox(0x33ff33,
+                      0.1, 8.0, 0.1));
+cubes.push(createBox(0x333ff,
+                      0.1, 0.1, 8.0));
+for (var i = 0; i < cubes.length; ++ i) {
+  scene.add(cubes[i]);
+}
+
+var light1 = new THREE.DirectionalLight(0xFFFFFF, 1.0, 0);
+light1.position.set( -10, -30, -20 );
+scene.add(light1);
+var light1 = new THREE.DirectionalLight(0xEEEEEE, 1.0, 0);
+light1.position.set( 10, 20, 30 );
+scene.add(light1);
+
+var devOrient = {alpha: 0.0, beta: 0.0, gamma: 0.0};
+
+camera.rotation.order = 'ZXY';
+function animate() {
+  requestAnimationFrame( animate );
+  camera.rotation.x = devOrient.beta / 180 * Math.PI;
+  camera.rotation.y = devOrient.gamma / 180 * Math.PI;
+  camera.rotation.z = devOrient.alpha / 180 * Math.PI;
+  var euler = new THREE.Euler( camera.rotation.x, camera.rotation.y, camera.rotation.z, 'ZXY');
+  var vec = new THREE.Vector3(0, 0, 7);
+  vec.applyEuler(euler);
+  camera.position.x = vec.x;
+  camera.position.y = vec.y;
+  camera.position.z = vec.z;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+var infoDiv = document.createElement('div');
+infoDiv.id = 'info';
+document.body.appendChild(infoDiv);
+
+function showInfo(txt) {
+  while (infoDiv.firstChild) {
+    infoDiv.removeChild(infoDiv.firstChild);
+  }
+  var pre = document.createElement('pre');
+  pre.appendChild(document.createTextNode(txt));
+  infoDiv.appendChild(pre);
+}
+
+window.addEventListener('resize', function() {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+}, false );
+
+window.addEventListener('deviceorientation', function(event) {
+  //showInfo('absolute: ' + event.absolute + '\na: ' +　event.alpha + '\nb: ' + event.beta + '\ng: ' + event.gamma);
+  devOrient.alpha = event.alpha;
+  devOrient.beta = event.beta;
+  devOrient.gamma = event.gamma;
+}, false );
+
+
+window.addEventListener('load', function(event) {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(mediaStream => {
+      document.querySelector('video').srcObject = mediaStream;
+      var track = mediaStream.getVideoTracks()[0];
+      imageCapture = new ImageCapture(track);
+    });
+  var video = document.getElementById('video');
+  var opacityRange = document.getElementById('opacityRange');
+  opacityRange.addEventListener('change', function(event) {
+    video.style.opacity = parseFloat(event.target.value) / 100.0;
+  }, false);
+}, false );
+
+
+		</script>
+    <video autoplay id="video"></video>
+    <input type="range" min="0" max="100" id="opacityRange">
+	</body>
+</html>
