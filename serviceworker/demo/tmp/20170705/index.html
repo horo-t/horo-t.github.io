@@ -1,0 +1,12 @@
+<script>
+var worker;
+var sharedworker;
+function startworker() {
+  worker = new Worker("worker.js");
+}
+function startsharedworker() {
+  sharedworker = new SharedWorker("worker.js");
+}
+</script>
+<input type="button" onclick="startworker()" value="startworker">
+<input type="button" onclick="startsharedworker()" value="startsharedworker">
