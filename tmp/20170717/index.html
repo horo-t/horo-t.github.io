@@ -442,9 +442,12 @@ RecordManager.prototype = {
     for (var i = 0; i < blobs.length; ++i) {
       promises.push(
         createImageBitmap(blobs[i])
-          .then(((idx, imageBitmap) => {
-            this.savedBitmaps[idx] = imageBitmap;
-          }).bind(this, i)));
+          .then(
+            ((idx, imageBitmap) => {
+              this.savedBitmaps[idx] = imageBitmap;
+            }).bind(this, i),
+            ((idx) => {
+            }).bind(this, i)));
     }
     return Promise.all(promises);
   }
@@ -571,11 +574,12 @@ UIManager.prototype = {
       .then(blobs => {
         console.log('toBlobs done');
         var size = 0;
+        var thumbnailBlob = blobs[0];
         blobs.forEach(blob => size += blob.size);
         console.log('Num: ' + blobs.length + ' size: ' + size + ' bytes');
         // this._recordManager.fromBlobs(blobs);
         this._storage.putPhotosInfo({pid: pid, blobs: blobs, width: width, height: height})
-          .then(_ => this._storage.putThumbnailInfo({pid: pid, blobs: [blobs[0]], width: width, height: height}))
+          .then(_ => this._storage.putThumbnailInfo({pid: pid, blobs: [thumbnailBlob], width: width, height: height}))
           .then(_ => {
             this._previewOkButton.classList.remove('preview-ok-button-disabled');
           }, _ => console.log('err'));
@@ -620,13 +624,13 @@ UIManager.prototype = {
     });
   },
   _onThumbnailClicked: function(pid) {
+    this._playCanvasCtx.clearRect(0, 0, this._playCanvas.width, this._playCanvas.height);
     this._mainPanel.classList.add('hidden');
     this._playPanel.classList.remove('hidden');
     this._nowLoading = true;
     this._lastPlayIndex = -1;
     this._storage.getPhotosIInfo(pid).then(info => {
       this._recordManager.fromBlobs(info.blobs).then(_ => {
-        console.log(info);
         this._nowLoading = false;
       });
     });
