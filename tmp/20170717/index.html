@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html><head><title></title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<style>
+body { margin: 0; }
+html, body {
+  height: 100%;
+  margin: 0px;
+  padding: 0px
+}
+#main-panel {
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+#thumbnails-panel {
+  background-color: white;
+  width: 100%;
+  z-index: 10;
+  flex-wrap: wrap;
+  display: flex;
+}
+
+.thumbnail-item {
+  display: inline;
+  padding: 10px
+}
+.thumbnail-item-down {
+  opacity: 0.9;
+}
+.thumbnail-div {
+  display: flex;
+  flex-direction: column;
+}
+.thumbnail-title {
+  display: inline;
+  font-size: small;
+  text-align: center;
+}
+.thumbnail-img {
+}
+
+.hidden {
+  display: none;
+}
+.main-control-add-button {
+  background-color: white;
+  border-radius: 32px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.26);
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.main-control-add-button-down {
+  background-color: #ddd;
+}
+.main-control-add-button-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  background: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMuMiIvPgogICAgPHBhdGggZD0iTTkgMkw3LjE3IDRINGMtMS4xIDAtMiAuOS0yIDJ2MTJjMCAxLjEuOSAyIDIgMmgxNmMxLjEgMCAyLS45IDItMlY2YzAtMS4xLS45LTItMi0yaC0zLjE3TDE1IDJIOXptMyAxNWMtMi43NiAwLTUtMi4yNC01LTVzMi4yNC01IDUtNSA1IDIuMjQgNSA1LTIuMjQgNS01IDV6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg==") left top/100% no-repeat;
+}
+#camera-panel {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+}
+#camera-video {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.camera-video-overlay {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.camera-video-overlay-flush {
+  animation:flush 0.2s;
+}
+@keyframes flush {
+  from {
+    background-color: white;
+    opacity: 1;
+  }
+  to {
+    background-color: white;
+    opacity: 0;
+  }
+}
+
+.camera-back-button {
+  border-radius: 32px;
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  left: calc(25% - 45px);
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.camera-back-button-down {
+  opacity: 0.5;
+}
+.camera-record-button {
+  background-color: red;
+  border-radius: 32px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.26);
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  left: calc(50% - 30px);
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.camera-record-button-down {
+  background-color: #f55;
+}
+
+#play-panel {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+}
+#play-canvas {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.play-back-button {
+  border-radius: 32px;
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  left: calc(33.33% - 15px);
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.play-back-button-down {
+  opacity: 0.5;
+}
+
+#preview-panel {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+}
+#preview-canvas {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.preview-back-button {
+  border-radius: 32px;
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  left: calc(33.33% - 15px);
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.back-button-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  background: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkZGRkZGIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz4KICAgIDxwYXRoIGQ9Ik0yMiAzSDdjLS42OSAwLTEuMjMuMzUtMS41OS44OEwwIDEybDUuNDEgOC4xMWMuMzYuNTMuOS44OSAxLjU5Ljg5aDE1YzEuMSAwIDItLjkgMi0yVjVjMC0xLjEtLjktMi0yLTJ6bS0zIDEyLjU5TDE3LjU5IDE3IDE0IDEzLjQxIDEwLjQxIDE3IDkgMTUuNTkgMTIuNTkgMTIgOSA4LjQxIDEwLjQxIDcgMTQgMTAuNTkgMTcuNTkgNyAxOSA4LjQxIDE1LjQxIDEyIDE5IDE1LjU5eiIvPgo8L3N2Zz4=") left top/100% no-repeat;
+}
+.preview-back-button-down {
+  opacity: 0.5;
+}
+.preview-ok-button {
+  border-radius: 32px;
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  right: calc(33.33% - 15px);
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.preview-ok-button-disabled {
+  opacity: 0.1;
+}
+.preview-ok-button-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  background: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkZGRkZGIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz4KICAgIDxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNWwtNS01IDEuNDEtMS40MUwxMCAxNC4xN2w3LjU5LTcuNTlMMTkgOGwtOSA5eiIvPgo8L3N2Zz4=") left top/100% no-repeat;
+}
+.preview-ok-button-down {
+  opacity: 0.5;
+}
+
+</style>
+<script>
+"use strict";
+
+var UIUtil = function() {};
+
+UIUtil.setDownStyle = function(div, className, eventTarget) {
+  if (!eventTarget) {
+    eventTarget = div;
+  }
+  eventTarget.addEventListener('mousedown', (function(div, className) {
+    div.classList.add(className);
+  }).bind(null, div, className));
+  eventTarget.addEventListener('touchstart', (function(div, className) {
+    div.classList.add(className);
+  }).bind(null, div, className));
+  document.addEventListener('mouseup', (function(div, className) {
+    div.classList.remove(className);
+  }).bind(null, div, className));
+  document.addEventListener('touchend', (function(div, className) {
+    div.classList.remove(className);
+  }).bind(null, div, className));
+};
+
+UIUtil.imageBitmapToBlob = function(imageBitmap, mimeType, qualityArgument, workCanvas) {
+  var canvas = workCanvas;
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+  }
+  canvas.width = imageBitmap.width;
+  canvas.height = imageBitmap.height;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, imageBitmap.width, imageBitmap.height);
+  ctx.drawImage(imageBitmap, 0, 0, imageBitmap.width, imageBitmap.height,
+      0, 0, imageBitmap.width, imageBitmap.height);
+  var resolve;
+  var promise = new Promise(r => { resolve = r; });
+  canvas.toBlob(resolve, mimeType, qualityArgument);
+  return promise;
+};
+
+
+var PhotoStorage = function() {
+  this._DB_NAME = 'pc';
+  this._DB_VERSION = 4;
+  this._PHOTO_STORE_NAME = 'p' + this._DB_VERSION;
+  this._THUMBNAIL_STORE_NAME = 't' + this._DB_VERSION;
+  this._initialize();
+};
+
+PhotoStorage.prototype = {
+  _initialize: function() {
+    this._db_promise = new Promise((function(resolve, reject) {
+      var req = indexedDB.open(this._DB_NAME, this._DB_VERSION);
+      req.onupgradeneeded = (function (event) {
+          try{
+            var db = event.target.result;
+            for (var i = 0; i < db.objectStoreNames.length; ++i) {
+              db.deleteObjectStore(db.objectStoreNames[i]);
+            }
+            db.createObjectStore(
+                this._PHOTO_STORE_NAME, { keyPath: 'pid' });
+            db.createObjectStore(
+                this._THUMBNAIL_STORE_NAME, { keyPath: 'pid' });
+          } catch(e) {
+            console.error(e);
+          }
+        }).bind(this);
+      req.onsuccess = (function (resolve, event) {
+        resolve(event.target.result, resolve);
+      }).bind(this, resolve);
+      req.onerror = (function (reject, event) {
+        console.error('onupgradeneeded error');
+        console.error(event);
+        reject(event);
+      }).bind(this, reject);
+    }).bind(this));
+  },
+  getThumbnails: function(count) {
+    return this._db_promise.then((function(count, db) {
+        return new Promise((function(count, resolve, reject) {
+          var transaction = db.transaction(this._THUMBNAIL_STORE_NAME, 'readonly');
+          var store = transaction.objectStore(this._THUMBNAIL_STORE_NAME);
+          var results = [];
+          store.openCursor(undefined, "prev").onsuccess = (function(results, count, resolve, reject, event) {
+            var cursor = event.target.result;
+            if(cursor) {
+              results.push(cursor.value);
+              if (results.length == count) {
+                resolve(results);
+              } else {
+                cursor.continue();
+              }
+            } else {
+              resolve(results);
+            }
+          }).bind(this, results, count, resolve, reject);
+        }).bind(this, count));
+      }).bind(this, count));
+  },
+  putThumbnailInfo: function(data) {
+    return this._db_promise.then((function(data, db) {
+        return new Promise((function(data, resolve, reject) {
+          var transaction = db.transaction(this._THUMBNAIL_STORE_NAME, 'readwrite');
+          var store = transaction.objectStore(this._THUMBNAIL_STORE_NAME);
+          var req = store.put(data);
+          req.onsuccess = function() { resolve(req.result); }
+          req.onerror = function (event) {
+            reject(event);
+          };
+        }).bind(this, data));
+      }).bind(this, data));
+  },
+  putPhotosInfo: function(data) {
+    return this._db_promise.then((function(data, db) {
+        return new Promise((function(data, resolve, reject) {
+          var transaction = db.transaction(this._PHOTO_STORE_NAME, 'readwrite');
+          var store = transaction.objectStore(this._PHOTO_STORE_NAME);
+          var req = store.put(data);
+          req.onsuccess = function() { resolve(req.result); }
+          req.onerror = function (event) {
+            reject(event);
+          };
+        }).bind(this, data));
+      }).bind(this, data));
+  },
+  getPhotosIInfo: function(pid) {
+    return this._db_promise.then((function(pid, db) {
+        return new Promise((function(pid, resolve, reject) {
+          var transaction = db.transaction(this._PHOTO_STORE_NAME, 'readonly');
+          var store = transaction.objectStore(this._PHOTO_STORE_NAME);
+          var req = store.get(pid);
+          req.onsuccess = function() {
+            resolve(req.result);
+          };
+          req.onerror = function (event) { reject(event); };
+        }).bind(this, pid));
+      }).bind(this, pid),
+      function(){
+        console.log('getPhotosIInfo storage error');
+        return undefined;
+      });
+  }
+};
+
+
+var RecordManager = function() {
+  this._recording = false;
+  this._onFrameCallback = this._onFrame.bind(this);
+  this.imageBitmaps = [];
+  this.savedBitmaps = [];
+};
+RecordManager.prototype = {
+  start: function(imageCapture) {
+    console.log('start');
+    if (this._recording)
+      return;
+    this._recording = true;
+    this.imageBitmaps = [];
+    this.savedBitmaps = [];
+    this._imageCapture = imageCapture;
+    this._imageCapture.grabFrame().then(this._onFrameCallback);
+  },
+  stop: function() {
+    console.log('stop');
+    if (!this._recording)
+      return;
+    this._recording = false;
+    console.log(this.imageBitmaps.length);
+  },
+  decimate: function(num) {
+    if (this.imageBitmaps.length < num) {
+      return;
+    }
+    var newImageBitmaps = [];
+    for (var i = 0; i < num; ++i) {
+      newImageBitmaps.push(this.imageBitmaps[Math.floor(i * this.imageBitmaps.length / num)]);
+    }
+    this.imageBitmaps = newImageBitmaps;
+  },
+  _onFrame: function(imageBitmap) {
+    if (!this._recording)
+      return;
+    this.imageBitmaps.push(imageBitmap);
+    this._imageCapture.grabFrame().then(this._onFrameCallback);
+  },
+
+  toBlobs: function(mimeType, qualityArgument) {
+    var workCanvas = document.createElement('canvas');
+    var promise =
+        UIUtil
+          .imageBitmapToBlob(this.imageBitmaps[0], mimeType, qualityArgument, workCanvas)
+          .then(blob => [blob]);
+    var imageBitmaps = [];
+    for (var i = 1; i < this.imageBitmaps.length; ++i) {
+      imageBitmaps.push(this.imageBitmaps[i]);
+    }
+    imageBitmaps.forEach(
+        imageBitmap => {
+        promise = promise.then(blobs => {
+          return new Promise(resolve => {
+            UIUtil.imageBitmapToBlob(imageBitmap, mimeType, qualityArgument)
+            .then(blob => {
+              blobs.push(blob);
+              resolve(blobs);
+            });
+          });
+        })
+      });
+    return promise;
+  },
+  fromBlobs: function(blobs) {
+    this.savedBitmaps = [];
+    var promises = [];
+    for (var i = 0; i < blobs.length; ++i) {
+      promises.push(
+        createImageBitmap(blobs[i])
+          .then(((idx, imageBitmap) => {
+            this.savedBitmaps[idx] = imageBitmap;
+          }).bind(this, i)));
+    }
+    return Promise.all(promises);
+  }
+};
+
+var UIManager = function() {
+    this._storage = new PhotoStorage();
+};
+UIManager.prototype = {
+  init: function() {
+    this._recordManager = new RecordManager();
+    this._mainPanel = document.getElementById('main-panel');
+    this._thumbnailsPanel = document.getElementById('thumbnails-panel');
+    this._cameraPanel = document.getElementById('camera-panel');
+    this._previewPanel = document.getElementById('preview-panel');
+    this._playPanel = document.getElementById('play-panel');
+
+    this._mainControlAddButton = document.getElementById('main-control-add-button');
+    this._cameraBackButton = document.getElementById('camera-back-button');
+    this._cameraRecordButton = document.getElementById('camera-record-button');
+    this._cameraVideo = document.getElementById('camera-video');
+    this._cameraVideoOverray = document.getElementById('camera-video-overlay');
+
+    this._previewCanvas = document.getElementById('preview-canvas');
+    this._previewCanvasCtx = this._previewCanvas.getContext('2d');
+    this._previewBackButton = document.getElementById('preview-back-button');
+    this._previewOkButton = document.getElementById('preview-ok-button');
+
+    this._playBackButton = document.getElementById('play-back-button');
+    this._playCanvas = document.getElementById('play-canvas');
+    this._playCanvasCtx = this._playCanvas.getContext('2d');
+
+    UIUtil.setDownStyle(this._mainControlAddButton, 'main-control-add-button-down', undefined);
+    UIUtil.setDownStyle(this._cameraBackButton, 'camera-back-button-down', undefined);
+    UIUtil.setDownStyle(this._cameraRecordButton, 'camera-record-button-down', undefined);
+    UIUtil.setDownStyle(this._previewBackButton, 'preview-back-button-down', undefined);
+    UIUtil.setDownStyle(this._previewOkButton, 'preview-ok-button-down', undefined);
+    UIUtil.setDownStyle(this._playBackButton, 'play-back-button-down', undefined);
+    this._mainControlAddButton.addEventListener(
+        'click',
+        this._onMainControlAddButtonClicked.bind(this));
+    this._cameraBackButton.addEventListener(
+        'click',
+        this._onCameraBackButtonClicked.bind(this));
+
+    this._cameraRecordButton.addEventListener(
+        'touchstart',
+        this._onCameraRecordButtonDown.bind(this));
+    this._cameraRecordButton.addEventListener(
+        'mousedown',
+        this._onCameraRecordButtonDown.bind(this));
+    this._cameraRecordButton.addEventListener(
+        'touchend',
+        this._onCameraRecordButtonUp.bind(this));
+    this._cameraRecordButton.addEventListener(
+        'touchcancel',
+        this._onCameraRecordButtonUp.bind(this));
+    this._cameraRecordButton.addEventListener(
+        'mouseup',
+        this._onCameraRecordButtonUp.bind(this));
+    this._previewBackButton.addEventListener(
+        'click',
+        this._onPreviewBackButtonClicked.bind(this));
+    this._previewOkButton.addEventListener(
+        'click',
+        this._onPreviewOkButtonClicked.bind(this));
+    this._playBackButton.addEventListener(
+        'click',
+        this._onPlayBackButtonClicked.bind(this));
+    window.addEventListener('deviceorientation', this._onDeviceOrientation.bind(this));
+    this._cameraVideoOverray.addEventListener('touchmove', this._onVideoTouchMove.bind(this));
+
+    this._rotationGamma = 0;
+    this._lastPreviewIndex = -1;
+    this._lastPlayIndex = -1;
+    this._openMainPanel();
+  },
+  _onVideoTouchMove: function(event) {
+    console.log("_onVideoTouchMove");
+    event.preventDefault();
+  },
+  _onDeviceOrientation: function(event) {
+    this._rotationGamma = event.gamma;
+    if (!this._previewPanel.classList.contains('hidden')) {
+      this._updatePreview();
+    }
+    if (!this._playPanel.classList.contains('hidden')) {
+      this._updatePlay();
+    }
+  },
+  _onCameraRecordButtonDown: function() {
+    this._cameraVideoOverray.classList.add('camera-video-overlay-flush');
+    this._recordManager.start(this._imageCapture);
+  },
+  _getTimeID: function() {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+    var date = now.getDate();
+    var hour = now.getHours();
+    var minutes = now.getMinutes();
+    var seconds = now.getSeconds();
+    if (month < 10) {month = '0' + month;}
+    if (date < 10) {date = '0' + date;}
+    if (hour < 10) {hour = '0' + hour;}
+    if (minutes < 10) {minutes = '0' + minutes;}
+    if (seconds < 10) {seconds = '0' + seconds;}
+    return year  + "/" + month + "/" + date + " " + hour + ":" + minutes + ":" + seconds;
+  },
+  _onCameraRecordButtonUp: function() {
+    this._cameraVideoOverray.classList.remove('camera-video-overlay-flush');
+    this._recordManager.stop();
+    if (!this._recordManager.imageBitmaps.length)
+      return;
+    // this._recordManager.decimate(64);
+    var width = this._recordManager.imageBitmaps[0].width;
+    var height = this._recordManager.imageBitmaps[0].height;
+    this._lastPreviewIndex = -1;
+    this._openPreviewPanel();
+    this._updatePreview();
+    this._previewOkButton.classList.add('preview-ok-button-disabled');
+    var pid = this._getTimeID();
+    this._recordManager.toBlobs('image/jpeg', 0.5)
+      .then(blobs => {
+        console.log('toBlobs done');
+        var size = 0;
+        blobs.forEach(blob => size += blob.size);
+        console.log('Num: ' + blobs.length + ' size: ' + size + ' bytes');
+        // this._recordManager.fromBlobs(blobs);
+        this._storage.putPhotosInfo({pid: pid, blobs: blobs, width: width, height: height})
+          .then(_ => this._storage.putThumbnailInfo({pid: pid, blobs: [blobs[0]], width: width, height: height}))
+          .then(_ => {
+            this._previewOkButton.classList.remove('preview-ok-button-disabled');
+          }, _ => console.log('err'));
+      });
+  },
+  _onMainControlAddButtonClicked: function() {
+    this._openCameraPanel();
+  },
+  _openMainPanel: function() {
+    this._mainPanel.classList.remove('hidden');
+    this._cameraPanel.classList.add('hidden');
+    this._previewPanel.classList.add('hidden');
+    this._storage.getThumbnails(-1).then(humbnails => {
+      while (this._thumbnailsPanel.firstChild) {
+        this._thumbnailsPanel.removeChild(this._thumbnailsPanel.firstChild);
+      }
+      humbnails.forEach(humbnail => {
+        var img = document.createElement('img');
+        img.classList.add('thumbnail-img');
+        img.src = URL.createObjectURL(humbnail.blobs[0]);
+        img.addEventListener('load', _ => {
+          URL.revokeObjectURL(img.src);
+        });
+        img.width = Math.floor(humbnail.width / 4);
+        img.height = Math.floor(humbnail.height / 4);
+        var imgDiv = document.createElement('div');
+        imgDiv.classList.add('thumbnail-div');
+        var imgTitleDiv = document.createElement('div');
+        imgTitleDiv.classList.add('thumbnail-title');
+        imgTitleDiv.appendChild(document.createTextNode(humbnail.pid));
+        imgDiv.appendChild(img);
+        imgDiv.appendChild(imgTitleDiv);
+        var imgItem = document.createElement('div');
+        imgItem.classList.add('thumbnail-item');
+        UIUtil.setDownStyle(imgItem, 'thumbnail-item-down', undefined);
+        imgItem.appendChild(imgDiv);
+        imgItem.addEventListener(
+            'click',
+            this._onThumbnailClicked.bind(this, humbnail.pid));
+        this._thumbnailsPanel.appendChild(imgItem);
+      });
+    });
+  },
+  _onThumbnailClicked: function(pid) {
+    this._mainPanel.classList.add('hidden');
+    this._playPanel.classList.remove('hidden');
+    this._nowLoading = true;
+    this._lastPlayIndex = -1;
+    this._storage.getPhotosIInfo(pid).then(info => {
+      this._recordManager.fromBlobs(info.blobs).then(_ => {
+        console.log(info);
+        this._nowLoading = false;
+      });
+    });
+  },
+  _onPlayBackButtonClicked: function(pid) {
+    this._mainPanel.classList.remove('hidden');
+    this._playPanel.classList.add('hidden');
+  },
+  _openCameraPanel: function() {
+    this._mainPanel.classList.add('hidden');
+    this._cameraPanel.classList.remove('hidden');
+    this._previewPanel.classList.add('hidden');
+    this._getUserMediaWithRetry(10)
+      .then(mediaStream => {
+        this._mediaStream = mediaStream;
+        this._cameraVideo.srcObject = mediaStream;
+        console.log("mediaStream ok");
+        this._imageCapture = new ImageCapture(this._mediaStream.getVideoTracks()[0]);
+        this._imageCapture.grabFrame()
+          .then(imageBitmap => {
+            console.log('Camera initialized');
+            console.log(imageBitmap);
+            var elementWidth = this._cameraVideo.offsetWidth;
+            var elementHeight = this._cameraVideo.offsetHeight;
+            var elementRatio = elementWidth / elementHeight;
+            var width = imageBitmap.width;
+            var height = imageBitmap.height;
+            var ratio = width / height;
+            if (ratio < elementRatio) {
+                this._cameraVideo.style.transform = 'scaleX(' + elementRatio / ratio  + ')';
+            } else if (elementRatio < ratio) {
+                this._cameraVideo.style.transform = 'scaleY(' + ratio / elementRatio  + ')';
+            }
+          });
+      }, err => {
+        console.log("_getUserMediaWithRetry");
+      });
+  },
+  _onCameraBackButtonClicked: function() {
+    this._openMainPanel();
+    this._closeMediaStream();
+  },
+
+  _onPreviewBackButtonClicked: function() {
+    this._mainPanel.classList.add('hidden');
+    this._cameraPanel.classList.remove('hidden');
+    this._previewPanel.classList.add('hidden');
+  },
+  _onPreviewOkButtonClicked: function() {
+    if (this._previewOkButton.classList.contains('preview-ok-button-disabled')) {
+      return;
+    }
+    this._mainPanel.classList.add('hidden');
+    this._cameraPanel.classList.remove('hidden');
+    this._previewPanel.classList.add('hidden');
+  },
+  _openPreviewPanel: function() {
+    this._mainPanel.classList.add('hidden');
+    this._cameraPanel.classList.add('hidden');
+    this._previewPanel.classList.remove('hidden');
+  },
+  _updatePlay: function() {
+    if (this._nowLoading)
+      return;
+    var imageBitmaps = this._recordManager.savedBitmaps;
+    var index = Math.floor((this._rotationGamma + 30) * imageBitmaps.length / 60);
+    if (index < 0)
+      index = 0;
+    else if (index >= imageBitmaps.length)
+      index = imageBitmaps.length - 1;
+    if (this._lastPlayIndex == index)
+      return;
+    this._lastPlayIndex = index;
+    var bitmap = imageBitmaps[index];
+    this._playCanvas.width = bitmap.width;
+    this._playCanvas.height = bitmap.height;
+    this._playCanvasCtx.clearRect(0, 0, bitmap.width, bitmap.height);
+    this._playCanvasCtx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height,
+        0, 0, bitmap.width, bitmap.height);
+  },
+  _updatePreview: function() {
+    var imageBitmaps = this._recordManager.imageBitmaps;
+    var savedBitmaps = this._recordManager.savedBitmaps;
+    var index = Math.floor((this._rotationGamma + 30) * imageBitmaps.length / 60);
+    if (index < 0)
+      index = 0;
+    else if (index >= imageBitmaps.length)
+      index = imageBitmaps.length - 1;
+    if (this._lastPreviewIndex == index)
+      return;
+    this._lastPreviewIndex = index;
+    var bitmap = savedBitmaps[index];
+    if (!bitmap) {
+      bitmap = imageBitmaps[index];
+    }
+    this._previewCanvas.width = bitmap.width;
+    this._previewCanvas.height = bitmap.height;
+    this._previewCanvasCtx.clearRect(0, 0, bitmap.width, bitmap.height);
+    this._previewCanvasCtx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height,
+        0, 0, bitmap.width, bitmap.height);
+  },
+  _closeMediaStream: function() {
+    if (!this._mediaStream)
+      return;
+    this._mediaStream.getVideoTracks().forEach(function(track) {
+        track.stop();
+    });
+  },
+  _getUserMediaWithRetry: function(retry) {
+    console.log('getUserMediaWithRetry: ' + retry);
+    if (retry == 0) {
+      return Promise.reject(new Error("getUserMediaWithRetry error"));
+    }
+    return navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}})
+        .then(
+          mediaStream => mediaStream,
+          e => {
+            console.log(e);
+            if (e.name == 'PermissionDeniedError')
+              return Promise.reject(e);
+            return new Promise(r => {
+              setTimeout(_ => {r(this._getUserMediaWithRetry(retry - 1))}, 100);
+            });
+          });
+  }
+};
+
+var ui_manager = new UIManager();
+
+window.addEventListener('DOMContentLoaded', event => {
+  ui_manager.init();
+}, false);
+
+</script>
+</head><body>
+<div id="main-panel">
+  <div id="thumbnails-panel"></div>
+  <div id="main-control-add-button" class="main-control-add-button"><div class="main-control-add-button-icon"></div></div>
+</div>
+<div id="camera-panel" class="hidden">
+  <video autoplay id="camera-video"></video>
+  <div id="camera-video-overlay" class="camera-video-overlay"></div>
+  <div id="camera-back-button" class="camera-back-button"><div class="back-button-icon"></div></div>
+  <div id="camera-record-button" class="camera-record-button"></div>
+</div>
+<div id="preview-panel" class="hidden">
+  <canvas id="preview-canvas"></canvas>
+  <div id="preview-back-button" class="preview-back-button"><div class="back-button-icon"></div></div>
+  <div id="preview-ok-button" class="preview-ok-button"><div class="preview-ok-button-icon"></div></div>
+</div>
+<div id="play-panel" class="hidden">
+  <canvas id="play-canvas"></canvas>
+  <div id="play-back-button" class="play-back-button"><div class="back-button-icon"></div></div>
+</div>
+</body></html>
