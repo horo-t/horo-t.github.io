@@ -62,6 +62,7 @@
   }
 </style>
 <script>
+"use strict";
 var logs = '';
 
 function log(text) {
@@ -167,10 +168,28 @@ window.addEventListener('deviceorientation', function(event) {
   console.log(index);
 }, false );
 
+function getUserMediaWithRetry(retry) {
+  log('getUserMediaWithRetry: ' + retry);
+  if (retry == 0) {
+    return Promise.reject(new Error("getUserMediaWithRetry error"));
+  }
+  return navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}})
+      .then(
+        mediaStream => mediaStream,
+        e => {
+          log('getUserMedia error:' + e.toString());
+          console.log(e);
+          return new Promise(r => {
+            setTimeout(_ => {r(getUserMediaWithRetry(retry - 1))}, 100);
+          });
+        });
+
+}
+
 window.addEventListener('DOMContentLoaded', event => {
   log('Initializing Camera...');
   initElements(640, 480);
-  navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}})
+  getUserMediaWithRetry(3)
     .then(mediaStream => {
       var videoElement = document.getElementById('video');
       videoElement.srcObject = mediaStream;
@@ -182,8 +201,8 @@ window.addEventListener('DOMContentLoaded', event => {
           log('------------------------------');
           initElements(imageBitmap.width, imageBitmap.height);
           initializeButton();
-        }, e => {log('getUserMedia error:' + e.toString());console.log(e);});
-    }, e => {log('getUserMedia error:' + e.toString()); console.log(e);});
+        }, e => {log('grabFrame error:' + e.toString());console.log(e);});
+    }, e => {log('getUserMediaWithRetry error:' + e.toString()); console.log(e);});
 }, false);
 </script>
 </head>
