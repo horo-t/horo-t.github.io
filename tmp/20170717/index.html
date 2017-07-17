@@ -163,6 +163,30 @@ html, body {
   opacity: 0.5;
 }
 
+.play-delete-button {
+  border-radius: 32px;
+  position: fixed;
+  z-index: 10;
+  bottom: 30px;
+  right: calc(33.33% - 15px);
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  opacity: 0.9;
+}
+.play-delete-button-down {
+  opacity: 0.5;
+}
+.delete-button-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  background: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkZGRkZGIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik02IDE5YzAgMS4xLjkgMiAyIDJoOGMxLjEgMCAyLS45IDItMlY3SDZ2MTJ6TTE5IDRoLTMuNWwtMS0xaC01bC0xIDFINXYyaDE0VjR6Ii8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg==") left top/100% no-repeat;
+}
+
 #preview-panel {
   background-color: black;
   width: 100%;
@@ -338,6 +362,19 @@ PhotoStorage.prototype = {
         }).bind(this, data));
       }).bind(this, data));
   },
+  deleteThumbnailInfo: function(pid) {
+    return this._db_promise.then((function(pid, db) {
+        return new Promise((function(pid, resolve, reject) {
+          var transaction = db.transaction(this._THUMBNAIL_STORE_NAME, 'readwrite');
+          var store = transaction.objectStore(this._THUMBNAIL_STORE_NAME);
+          var req = store.delete(pid);
+          req.onsuccess = function() { resolve(req.result); }
+          req.onerror = function (event) {
+            reject(event);
+          };
+        }).bind(this, pid));
+      }).bind(this, pid));
+  },
   putPhotosInfo: function(data) {
     return this._db_promise.then((function(data, db) {
         return new Promise((function(data, resolve, reject) {
@@ -351,7 +388,7 @@ PhotoStorage.prototype = {
         }).bind(this, data));
       }).bind(this, data));
   },
-  getPhotosIInfo: function(pid) {
+  getPhotosInfo: function(pid) {
     return this._db_promise.then((function(pid, db) {
         return new Promise((function(pid, resolve, reject) {
           var transaction = db.transaction(this._PHOTO_STORE_NAME, 'readonly');
@@ -364,7 +401,24 @@ PhotoStorage.prototype = {
         }).bind(this, pid));
       }).bind(this, pid),
       function(){
-        console.log('getPhotosIInfo storage error');
+        console.log('getPhotosInfo storage error');
+        return undefined;
+      });
+  },
+  deletePhotosInfo: function(pid) {
+    return this._db_promise.then((function(pid, db) {
+        return new Promise((function(pid, resolve, reject) {
+          var transaction = db.transaction(this._PHOTO_STORE_NAME, 'readwrite');
+          var store = transaction.objectStore(this._PHOTO_STORE_NAME);
+          var req = store.delete(pid);
+          req.onsuccess = function() {
+            resolve(req.result);
+          };
+          req.onerror = function (event) { reject(event); };
+        }).bind(this, pid));
+      }).bind(this, pid),
+      function(){
+        console.log('getPhotosInfo storage error');
         return undefined;
       });
   }
@@ -477,6 +531,7 @@ UIManager.prototype = {
     this._previewOkButton = document.getElementById('preview-ok-button');
 
     this._playBackButton = document.getElementById('play-back-button');
+    this._playDeleteButton = document.getElementById('play-delete-button');
     this._playCanvas = document.getElementById('play-canvas');
     this._playCanvasCtx = this._playCanvas.getContext('2d');
 
@@ -486,6 +541,7 @@ UIManager.prototype = {
     UIUtil.setDownStyle(this._previewBackButton, 'preview-back-button-down', undefined);
     UIUtil.setDownStyle(this._previewOkButton, 'preview-ok-button-down', undefined);
     UIUtil.setDownStyle(this._playBackButton, 'play-back-button-down', undefined);
+    UIUtil.setDownStyle(this._playDeleteButton, 'play-delete-button-down', undefined);
     this._mainControlAddButton.addEventListener(
         'click',
         this._onMainControlAddButtonClicked.bind(this));
@@ -517,6 +573,9 @@ UIManager.prototype = {
     this._playBackButton.addEventListener(
         'click',
         this._onPlayBackButtonClicked.bind(this));
+    this._playDeleteButton.addEventListener(
+        'click',
+        this._onPlayDeleteButtonClicked.bind(this));
     window.addEventListener('deviceorientation', this._onDeviceOrientation.bind(this));
     this._cameraVideoOverray.addEventListener('touchmove', this._onVideoTouchMove.bind(this));
 
@@ -592,6 +651,7 @@ UIManager.prototype = {
     this._mainPanel.classList.remove('hidden');
     this._cameraPanel.classList.add('hidden');
     this._previewPanel.classList.add('hidden');
+    this._playPanel.classList.add('hidden');
     this._storage.getThumbnails(-1).then(humbnails => {
       while (this._thumbnailsPanel.firstChild) {
         this._thumbnailsPanel.removeChild(this._thumbnailsPanel.firstChild);
@@ -624,20 +684,34 @@ UIManager.prototype = {
     });
   },
   _onThumbnailClicked: function(pid) {
+    this._playingPid = pid;
     this._playCanvasCtx.clearRect(0, 0, this._playCanvas.width, this._playCanvas.height);
     this._mainPanel.classList.add('hidden');
     this._playPanel.classList.remove('hidden');
     this._nowLoading = true;
     this._lastPlayIndex = -1;
-    this._storage.getPhotosIInfo(pid).then(info => {
+    this._storage.getPhotosInfo(pid).then(info => {
       this._recordManager.fromBlobs(info.blobs).then(_ => {
         this._nowLoading = false;
       });
     });
   },
-  _onPlayBackButtonClicked: function(pid) {
+  _onPlayBackButtonClicked: function() {
     this._mainPanel.classList.remove('hidden');
     this._playPanel.classList.add('hidden');
+  },
+  _onPlayDeleteButtonClicked: function() {
+    var pid = this._playingPid;
+    if (!pid) {
+      return;
+    }
+    this._storage.deleteThumbnailInfo(pid)
+      .then(_ => this._storage.deletePhotosInfo(pid))
+      .then(_ => {
+        // TODO: Not to reload all.
+        this._openMainPanel();
+      })
+      .catch(e => {console.log(e);});
   },
   _openCameraPanel: function() {
     this._mainPanel.classList.add('hidden');
@@ -670,6 +744,7 @@ UIManager.prototype = {
       });
   },
   _onCameraBackButtonClicked: function() {
+    // TODO: Not to reload all.
     this._openMainPanel();
     this._closeMediaStream();
   },
@@ -784,5 +859,6 @@ window.addEventListener('DOMContentLoaded', event => {
 <div id="play-panel" class="hidden">
   <canvas id="play-canvas"></canvas>
   <div id="play-back-button" class="play-back-button"><div class="back-button-icon"></div></div>
+  <div id="play-delete-button" class="play-delete-button"><div class="delete-button-icon"></div></div>
 </div>
 </body></html>
