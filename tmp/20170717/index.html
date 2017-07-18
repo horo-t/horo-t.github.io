@@ -9,11 +9,18 @@ html, body {
   margin: 0px;
   padding: 0px
 }
-#main-panel {
+.main-panel {
   background-color: white;
   width: 100%;
   height: 100%;
   z-index: 10;
+  display: flex;
+  overflow: hidden;
+}
+#thumbnails-scroller {
+  overflow-x: hidden;
+  overflow-y: auto;
+  flex: 1;
 }
 #thumbnails-panel {
   background-color: white;
@@ -855,8 +862,10 @@ window.addEventListener('DOMContentLoaded', event => {
 
 </script>
 </head><body>
-<div id="main-panel">
+<div id="main-panel" class="main-panel">
+  <div id="thumbnails-scroller">
   <div id="thumbnails-panel"></div>
+  </div>
   <div id="main-control-add-button" class="main-control-add-button"><div class="main-control-add-button-icon"></div></div>
 </div>
 <div id="camera-panel" class="hidden">
