@@ -629,6 +629,7 @@ UIManager.prototype = {
     this._updatePreview();
     this._previewOkButton.classList.add('preview-ok-button-disabled');
     var pid = this._getTimeID();
+    this._previewPid = pid;
     this._recordManager.toBlobs('image/jpeg', 0.5)
       .then(blobs => {
         console.log('toBlobs done');
@@ -641,6 +642,11 @@ UIManager.prototype = {
           .then(_ => this._storage.putThumbnailInfo({pid: pid, blobs: [thumbnailBlob], width: width, height: height}))
           .then(_ => {
             this._previewOkButton.classList.remove('preview-ok-button-disabled');
+            if (this._previewPid == pid)
+              return;
+            this._storage.deleteThumbnailInfo(pid)
+              .then(_ => this._storage.deletePhotosInfo(pid))
+              .catch(e => {console.log(e);});
           }, _ => console.log('err'));
       });
   },
@@ -751,6 +757,13 @@ UIManager.prototype = {
   },
 
   _onPreviewBackButtonClicked: function() {
+    if (this._previewPid) {
+      var pid = this._previewPid;
+      this._previewPid = undefined;
+      this._storage.deleteThumbnailInfo(pid)
+        .then(_ => this._storage.deletePhotosInfo(pid))
+        .catch(e => {console.log(e);});
+    }
     this._mainPanel.classList.add('hidden');
     this._cameraPanel.classList.remove('hidden');
     this._previewPanel.classList.add('hidden');
