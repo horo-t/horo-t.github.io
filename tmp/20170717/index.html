@@ -266,6 +266,24 @@ html, body {
   opacity: 0.5;
 }
 
+.preview-progress-bar-background {
+  position: fixed;
+  width: 60px;
+  height: 8px;
+  color: #000;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  right: calc(33.33% - 15px);
+  bottom: 27px;
+}
+.preview-progress-bar {
+  color: #fff;
+  background-color: #2196F3;
+  padding: 0.01em 8px;
+  border-radius: 8px;
+  height: 8px;
+}
+
 .hidden {
   display: none;
 }
@@ -487,7 +505,7 @@ RecordManager.prototype = {
     this._imageCapture.grabFrame().then(this._onFrameCallback);
   },
 
-  toBlobs: function(mimeType, qualityArgument) {
+  toBlobs: function(mimeType, qualityArgument, progressCallback) {
     var workCanvas = document.createElement('canvas');
     var promise =
         UIUtil
@@ -497,10 +515,15 @@ RecordManager.prototype = {
     for (var i = 1; i < this.imageBitmaps.length; ++i) {
       imageBitmaps.push(this.imageBitmaps[i]);
     }
+    var progress = 0;
     imageBitmaps.forEach(
         imageBitmap => {
         promise = promise.then(blobs => {
           return new Promise(resolve => {
+            ++progress;
+            if (progressCallback) {
+              progressCallback(progress, this.imageBitmaps.length);
+            }
             UIUtil.imageBitmapToBlob(imageBitmap, mimeType, qualityArgument)
             .then(blob => {
               blobs.push(blob);
@@ -552,6 +575,8 @@ UIManager.prototype = {
     this._previewCanvasCtx = this._previewCanvas.getContext('2d');
     this._previewBackButton = document.getElementById('preview-back-button');
     this._previewOkButton = document.getElementById('preview-ok-button');
+    this._previewProgressBarBackground = document.getElementById('preview-progress-bar-background');
+    this._previewProgressBar = document.getElementById('preview-progress-bar');
 
     this._playBackButton = document.getElementById('play-back-button');
     this._playDeleteButton = document.getElementById('play-delete-button');
@@ -648,12 +673,15 @@ UIManager.prototype = {
     var width = this._recordManager.imageBitmaps[0].width;
     var height = this._recordManager.imageBitmaps[0].height;
     this._lastPreviewIndex = -1;
+    this._previewProgressBarBackground.classList.remove('hidden');
     this._openPreviewPanel();
     this._updatePreview();
     this._previewOkButton.classList.add('preview-ok-button-disabled');
     var pid = this._getTimeID();
     this._previewPid = pid;
-    this._recordManager.toBlobs('image/jpeg', 0.5)
+    this._recordManager.toBlobs('image/jpeg',
+                                0.5,
+                                (a, b) => { this._previewProgressBar.style.width = 'calc(' + 100 * (a / b) + '% - 16px)'; })
       .then(blobs => {
         console.log('toBlobs done');
         var size = 0;
@@ -665,6 +693,7 @@ UIManager.prototype = {
           .then(_ => this._storage.putThumbnailInfo({pid: pid, blobs: [thumbnailBlob], width: width, height: height}))
           .then(_ => {
             this._previewOkButton.classList.remove('preview-ok-button-disabled');
+            this._previewProgressBarBackground.classList.add('hidden');
             if (this._previewPid == pid)
               return;
             this._storage.deleteThumbnailInfo(pid)
@@ -879,9 +908,7 @@ window.addEventListener('DOMContentLoaded', event => {
 </script>
 </head><body>
 <div id="main-panel" class="main-panel">
-  <div id="thumbnails-scroller">
-  <div id="thumbnails-panel"></div>
-  </div>
+  <div id="thumbnails-scroller"><div id="thumbnails-panel"></div></div>
   <div id="main-control-add-button" class="main-control-add-button"><div class="main-control-add-button-icon"></div></div>
 </div>
 <div id="camera-panel" class="camera-panel" class="hidden">
@@ -896,6 +923,7 @@ window.addEventListener('DOMContentLoaded', event => {
   <canvas id="preview-canvas"></canvas>
   <div id="preview-back-button" class="preview-back-button"><div class="back-button-icon"></div></div>
   <div id="preview-ok-button" class="preview-ok-button"><div class="preview-ok-button-icon"></div></div>
+  <div id="preview-progress-bar-background" class="preview-progress-bar-background"><div id="preview-progress-bar" class="preview-progress-bar"></div></div>
 </div>
 <div id="play-panel" class="hidden">
   <canvas id="play-canvas"></canvas>
