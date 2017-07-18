@@ -693,6 +693,7 @@ UIManager.prototype = {
     this._storage.getPhotosInfo(pid).then(info => {
       this._recordManager.fromBlobs(info.blobs).then(_ => {
         this._nowLoading = false;
+        this._updatePlay();
       });
     });
   },
