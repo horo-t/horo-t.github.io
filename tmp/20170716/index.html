@@ -111,7 +111,7 @@ function initElements(camWidth, camHeight) {
 
 function initializeButton() {
   var recButton = document.getElementById('recButton');
-  recButton.addEventListener("touchstart", e => {
+  function touchstart(e) {
     log("touchstart");
     if (!recording) {
       recording = true;
@@ -120,12 +120,46 @@ function initializeButton() {
       imageBitmaps = [];
       imageCapture.grabFrame().then(takenPhoto);
     }
-  }, false);
-  recButton.addEventListener("touchend", e => {
+  }
+  function touchend() {
     log("touchend");
     recording = false;
     log(imageBitmaps.length);
+  }
+  recButton.addEventListener("mousedown", touchstart, false);
+  recButton.addEventListener("mouseup", touchend, false);
+  recButton.addEventListener("touchstart", touchstart, false);
+  recButton.addEventListener("touchend", touchend, false);
+  recButton.addEventListener("touchcancel", e => {
+    log("touchcancel");
   }, false);
+  var clearLogButton = document.getElementById('clearLogButton');
+  clearLogButton.addEventListener('click', _ => {
+    var logText = document.getElementById('logText');
+    logs = '';
+    logText.innerText = logs;
+  }, false);
+}
+
+function initializeButtonForSafari(width, height) {
+  var recButton = document.getElementById('recButton');
+  var videoElement = document.getElementById('video');
+  function touchstart(e) {
+    log("touchstart");
+    recording = true;
+    lastFPSTime = performance.now();
+    fpsCount = 0;
+    imageBitmaps = [];
+  }
+  function touchend(e) {
+    log("touchend");
+    recording = false;
+    log(imageBitmaps.length);
+  }
+  recButton.addEventListener("mousedown", touchstart, false);
+  recButton.addEventListener("mouseup", touchend, false);
+  recButton.addEventListener("touchstart", touchstart, false);
+  recButton.addEventListener("touchend", touchend, false);
   recButton.addEventListener("touchcancel", e => {
     log("touchcancel");
   }, false);
@@ -188,20 +222,29 @@ function getUserMediaWithRetry(retry) {
 
 window.addEventListener('DOMContentLoaded', event => {
   log('Initializing Camera...');
-  initElements(640, 480);
+  initElements(240, 280);
   getUserMediaWithRetry(3)
     .then(mediaStream => {
       var videoElement = document.getElementById('video');
       videoElement.srcObject = mediaStream;
       var track = mediaStream.getVideoTracks()[0];
-      imageCapture = new ImageCapture(track);
-      imageCapture.grabFrame()
-        .then(imageBitmap => {
-          log('Camera initialized');
-          log('------------------------------');
-          initElements(imageBitmap.width, imageBitmap.height);
-          initializeButton();
-        }, e => {log('grabFrame error:' + e.toString());console.log(e);});
+      if ('ImageCapture' in window) {
+        imageCapture = new ImageCapture(track);
+        imageCapture.grabFrame()
+          .then(imageBitmap => {
+            log('Camera initialized');
+            log('------------------------------');
+            initElements(imageBitmap.width, imageBitmap.height);
+            initializeButton();
+          }, e => {log('grabFrame error:' + e.toString());console.log(e);});
+      } else {
+        videoElement.onloadedmetadata = _=> {
+          console.log('width is', videoElement.videoWidth);
+          console.log('height is', videoElement.videoHeight);
+          initElements(videoElement.videoWidth, videoElement.videoHeight);
+          initializeButtonForSafari();
+        }
+      }
     }, e => {log('getUserMediaWithRetry error:' + e.toString()); console.log(e);});
 }, false);
 </script>
