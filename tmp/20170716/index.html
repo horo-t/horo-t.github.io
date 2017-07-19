@@ -208,6 +208,7 @@ function onDevOri(event) {
     index = imageBitmaps.length - 1;
   if (lastIndex == index)
     return;
+  lastIndex = index;
   var imageBitmap = imageBitmaps[index];
   if (!resultCanvas) {
     resultCanvas = document.getElementById('resultCanvas');
