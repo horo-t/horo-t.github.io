@@ -207,7 +207,7 @@ function getUserMediaWithRetry(retry) {
   if (retry == 0) {
     return Promise.reject(new Error("getUserMediaWithRetry error"));
   }
-  return navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}})
+  return navigator.mediaDevices.getUserMedia({audio : false, video: {facingMode: 'environment'}})
       .then(
         mediaStream => mediaStream,
         e => {
@@ -227,8 +227,8 @@ window.addEventListener('DOMContentLoaded', event => {
     .then(mediaStream => {
       var videoElement = document.getElementById('video');
       videoElement.srcObject = mediaStream;
-      var track = mediaStream.getVideoTracks()[0];
       if ('ImageCapture' in window) {
+        var track = mediaStream.getVideoTracks()[0];
         imageCapture = new ImageCapture(track);
         imageCapture.grabFrame()
           .then(imageBitmap => {
@@ -254,7 +254,7 @@ window.addEventListener('DOMContentLoaded', event => {
 <button id='clearLogButton'>Clear Log</button>
 <textarea id='logText'></textarea>
 </div>
-<video autoplay id="video"></video>
+<video id="video" autoplay playsinline></video>
 <canvas id="resultCanvas"></canvas>
 <div id="recButton"></div>
 </body>
