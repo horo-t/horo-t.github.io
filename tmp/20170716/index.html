@@ -144,16 +144,36 @@ function initializeButton() {
 function initializeButtonForSafari(width, height) {
   var recButton = document.getElementById('recButton');
   var videoElement = document.getElementById('video');
+  var timerId;
+  function capture() {
+    if (!recording) {
+      return;
+    }
+    ++fpsCount;
+    if (fpsCount == 20) {
+      var now = performance.now();
+      log('cam: ' + (fpsCount * 1000 / (now - lastFPSTime)));
+      fpsCount = 0;
+      lastFPSTime = now;
+    }
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(videoElement, 0, 0, width, height);
+    imageBitmaps.push(canvas);
+  }
   function touchstart(e) {
     log("touchstart");
     recording = true;
     lastFPSTime = performance.now();
     fpsCount = 0;
     imageBitmaps = [];
+    timerId = setInterval(capture, 1000/30);
   }
   function touchend(e) {
     log("touchend");
     recording = false;
+    clearInterval(timerId);
     log(imageBitmaps.length);
   }
   recButton.addEventListener("mousedown", touchstart, false);
