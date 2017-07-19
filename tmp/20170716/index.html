@@ -194,8 +194,7 @@ function initializeButtonForSafari(width, height) {
 var lastIndex = -1;
 var resultCanvas = undefined;
 var resultCanvasCtx = undefined;
-
-window.addEventListener('deviceorientation', function(event) {
+function onDevOri(event) {
   // -30 --  30
   if (imageBitmaps.length == 0)
     return;
@@ -220,7 +219,9 @@ window.addEventListener('deviceorientation', function(event) {
   resultCanvasCtx.drawImage(imageBitmap, 0, 0, imageBitmap.width, imageBitmap.height,
       0, 0, imageBitmap.width, imageBitmap.height);
   console.log(index);
-}, false );
+}
+
+window.addEventListener('deviceorientation', onDevOri, false );
 
 function getUserMediaWithRetry(retry) {
   log('getUserMediaWithRetry: ' + retry);
@@ -239,6 +240,7 @@ function getUserMediaWithRetry(retry) {
         });
 
 }
+
 
 window.addEventListener('DOMContentLoaded', event => {
   log('Initializing Camera...');
@@ -262,7 +264,7 @@ window.addEventListener('DOMContentLoaded', event => {
           console.log('width is', videoElement.videoWidth);
           console.log('height is', videoElement.videoHeight);
           initElements(videoElement.videoWidth, videoElement.videoHeight);
-          initializeButtonForSafari();
+          initializeButtonForSafari(videoElement.videoWidth, videoElement.videoHeight);
         }
       }
     }, e => {log('getUserMediaWithRetry error:' + e.toString()); console.log(e);});
