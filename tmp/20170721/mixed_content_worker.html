@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<meta http-equiv="content-security-policy" content="block-all-mixed-content;">
+<script>
+window.addEventListener('securitypolicyviolation', () => {
+  console.log('securitypolicyviolation event in window');
+});
+var worker = new Worker('./worker.js');
+</script>
