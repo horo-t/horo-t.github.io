@@ -1,0 +1,14 @@
+<script>
+function fetchTest() {
+  fetch('redirect1')
+    .then(
+      (res) => {
+        console.log(res);
+      },
+      (err) => {
+        console.log(err);
+      },
+    );
+}
+</script>
+<input type="button" onclick="fetchTest()" value="Click this">
