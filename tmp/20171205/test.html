@@ -1,0 +1,25 @@
+<body>
+<script>
+let links = [];
+function add(url) {
+  let link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.as = 'wpk';
+  link.href = url;
+  document.body.appendChild(link);
+  links.push(link);
+}
+function remove() {
+  for (let i = 0; i < links.length; ++i) {
+    document.body.removeChild(links[i]);
+  }
+  links = null;
+}
+</script>
+<input type="button" onclick="add('./wapoamp.wpk')" value="add prefetch">
+<a href='./wapoamp.wpk'>wapoamp.wpk</a><br>
+
+<br>
+<a href="https://www-washingtonpost-com.cdn.ampproject.org/v/s/www.washingtonpost.com/amphtml/pr/wp/2016/05/19/the-washington-post-introduces-new-progressive-web-app-experience/?usqp=mq331AQGCAEYASAB&amp;amp_js_v=0.1">Original cdn.ampproject</a><br>
+<a href="https://www.google.co.jp/amp/s/www.washingtonpost.com/amphtml/pr/wp/2016/05/19/the-washington-post-introduces-new-progressive-web-app-experience/">Original google.co.jp</a><br>
+</body>
