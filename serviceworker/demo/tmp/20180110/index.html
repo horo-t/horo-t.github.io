@@ -1,0 +1,20 @@
+<script>
+function register() {
+  navigator.serviceWorker.register("./sw.js", {scope: "./scope/"})
+    .then(function(registration) {
+        alert("OK. Click startSharedWorker");
+        console.log(registration);
+      })
+    .catch(function(error) {
+        alert("error");
+        console.log(error);
+      });
+}
+var shared_worker;
+function startSharedWorker() {
+  shared_worker = new SharedWorker("./scope/test");
+}
+</script>
+<input type="button" onclick="register()" value="RegisterSW">
+<input type="button" onclick="startSharedWorker()" value="startSharedWorker">
+
