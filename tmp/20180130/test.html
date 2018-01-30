@@ -13,6 +13,12 @@
     link.href = url;
     document.body.appendChild(link);
   }
+  function addImgTag(url) {
+    log('-- addImgTag --');
+    let img = document.createElement('img');
+    img.src = url;
+    document.body.appendChild(img);
+  }
   function showPerformanceEntries() {
     log('-- showPerformanceEntries --');
     let entries = performance.getEntries();
@@ -23,6 +29,7 @@
 
   </script>
   <input type="button" onclick="addPrefetch('https://locchat.com/')" value="addPrefetch">
+  <input type="button" onclick="addImgTag('https://locchat.com/')" value="addImgTag">
   <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
   <div id="disp"></div>
   </body>
