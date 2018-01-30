@@ -1,0 +1,19 @@
+<body>
+  <script>
+  function add(url) {
+    let link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    document.body.appendChild(link);
+  }
+  function showPerformanceEntries() {
+    let entries = performance.getEntries();
+    entries.forEach(entry => {
+      console.log(entry.name)
+    });
+  }
+
+  </script>
+  <input type="button" onclick="add('https://locchat.com/')" value="add prefetch">
+  <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
+  </body>
