@@ -1,19 +1,28 @@
 <body>
   <script>
-  function add(url) {
+  function log(txt) {
+    let disp = document.getElementById('disp');
+    let div = document.createElement('div');
+      div.appendChild(document.createTextNode(txt));
+      disp.appendChild(div);
+  }
+  function addPrefetch(url) {
+    log('-- addPrefetch --');
     let link = document.createElement('link');
     link.rel = 'prefetch';
     link.href = url;
     document.body.appendChild(link);
   }
   function showPerformanceEntries() {
+    log('-- showPerformanceEntries --');
     let entries = performance.getEntries();
     entries.forEach(entry => {
-      console.log(entry.name)
+      log(entry.name);
     });
   }
 
   </script>
-  <input type="button" onclick="add('https://locchat.com/')" value="add prefetch">
+  <input type="button" onclick="addPrefetch('https://locchat.com/')" value="addPrefetch">
   <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
+  <div id="disp"></div>
   </body>
