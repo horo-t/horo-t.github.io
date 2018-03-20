@@ -1,0 +1,55 @@
+<body>
+  <script>
+  function log(txt) {
+    let disp = document.getElementById('disp');
+    let div = document.createElement('div');
+      div.appendChild(document.createTextNode(txt));
+      disp.appendChild(div);
+  }
+  function addPrefetch(url) {
+    log('-- addPrefetch --');
+    let link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    document.body.appendChild(link);
+  }
+  function showPerformanceEntries() {
+    log('-- showPerformanceEntries --');
+    let entries = performance.getEntries();
+    entries.forEach(entry => {
+      log(entry.name);
+    });
+  }
+
+  </script>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta.htxg">theguardian-terracotta.htxg</a>
+  </div>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-one-script.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-one-script.htxg">theguardian-terracotta-preload-one-script.htxg</a>
+  </div>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-scripts.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-scripts.htxg">theguardian-terracotta-preload-scripts.htxg</a>
+  </div>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts.htxg">theguardian-terracotta-preload-style-scripts.htxg</a>
+  </div>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts-xfont.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts-xfont.htxg">theguardian-terracotta-preload-style-scripts-xfont.htxg</a>
+  </div>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts-xfonts.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts-xfonts.htxg">theguardian-terracotta-preload-style-scripts-xfonts.htxg</a>
+  </div>
+  <div>
+  <input type="button" onclick="addPrefetch('https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts-xfonts-image.htxg')" value="prefetch">
+  <a href="https://horo-jp.firebaseapp.com/htxg/20180320/theguardian-terracotta-preload-style-scripts-xfonts-image.htxg">theguardian-terracotta-preload-style-scripts-xfonts-image.htxg</a>
+  </div>
+  <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
+  <div id="disp"></div>
+  </body>
