@@ -1,0 +1,47 @@
+<body>
+  <script>
+  function log(txt) {
+    let disp = document.getElementById('disp');
+    let div = document.createElement('div');
+      div.appendChild(document.createTextNode(txt));
+      disp.appendChild(div);
+  }
+  function addPrefetch(url) {
+    log('-- addPrefetch --');
+    let link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    document.body.appendChild(link);
+  }
+  function showPerformanceEntries() {
+    log('-- showPerformanceEntries --');
+    let entries = performance.getEntries();
+    entries.forEach(entry => {
+      log(entry.name);
+    });
+  }
+
+  </script>
+  <div>
+    <input type="button" onclick="addPrefetch('https://htxg-198803.appspot.com/theguardian-terracotta')" value="prefetch">
+    <a href="https://htxg-198803.appspot.com/theguardian-terracotta">theguardian-terracotta</a>
+  </div>
+  <div>
+    <input type="button" onclick="addPrefetch('https://htxg-198803.appspot.com/theguardian-terracotta?preloadScript')" value="prefetch">
+    <a href="https://htxg-198803.appspot.com/theguardian-terracotta?preloadScript">theguardian-terracotta?preloadScript</a>
+  </div>
+  <div>
+    <input type="button" onclick="addPrefetch('https://htxg-198803.appspot.com/theguardian-terracotta?preloadScripts')" value="prefetch">
+    <a href="https://htxg-198803.appspot.com/theguardian-terracotta?preloadScripts">theguardian-terracotta?preloadScripts</a>
+  </div>
+  <div>
+    <input type="button" onclick="addPrefetch('https://htxg-198803.appspot.com/theguardian-terracotta?preloadStyleScripts')" value="prefetch">
+    <a href="https://htxg-198803.appspot.com/theguardian-terracotta?preloadStyleScripts">theguardian-terracotta?preloadStyleScripts</a>
+  </div>
+  <div>
+    <input type="button" onclick="addPrefetch('https://htxg-198803.appspot.com/theguardian-terracotta?linkPreloadStyleScriptsFontsImage')" value="prefetch">
+    <a href="https://htxg-198803.appspot.com/theguardian-terracotta?linkPreloadStyleScriptsFontsImage">theguardian-terracotta?linkPreloadStyleScriptsFontsImage</a>
+  </div>
+  <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
+  <div id="disp"></div>
+  </body>
