@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<script>
+  var xmlhttp = new XMLHttpRequest;
+  xmlhttp.open("GET", document.location.href, false);
+  xmlhttp.send();
+  if (xmlhttp.readyState == 4) {
+      console.log(xmlhttp.readyState);
+  }
+</script>
