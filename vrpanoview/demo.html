@@ -8,13 +8,27 @@
 window.addEventListener('DOMContentLoaded', init, false);
 
 function init() {
-  const view = new VRPanoView({container: "vr_container"});
-  view.Load('./samples/R0010882.JPG');
+  const view1 = new VRPanoView({container: "vr_container1"});
+  view1.Load('./samples/20180913-092005009.vr.jpg');
+  const view2 = new VRPanoView({container: "vr_container2"});
+  view2.Load('./samples/R0010743.JPG');
+  const view3 = new VRPanoView({container: "vr_container3", open_btn: true});
 }
 </script>
 </head>
 <body>
 <h3>VRPanoView demo</h3>
-<div id="vr_container" style="width: 100%; height: 45%;"></div>
+<div>
+  <h4>VR180 panorama (Lenovo Mirage Camera)</h4>
+  <div id="vr_container1" style="width: 320px; height: 240px;"></div>
+</div>
+<div>
+  <h4>Spherical photo (RICOH THETA S)</h4>
+  <div id="vr_container2" style="width: 320px; height: 240px;"></div>
+</div>
+<div>
+  <h4>View your own photo</h4>
+  <div id="vr_container3" style="width: 320px; height: 240px;"></div>
+</div>
 </body>
 </html>
