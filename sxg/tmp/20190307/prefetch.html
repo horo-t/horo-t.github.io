@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prefetching Signed Exchange test</title>
+<title>Prefetching test</title>
 </head>
 <body>
   <script>
@@ -19,21 +19,9 @@
     link.href = url;
     document.body.appendChild(link);
   }
-  if (window.PerformanceObserver) {
-    new PerformanceObserver((list) => {
-      for (let e of list.getEntries()) {
-        if (e.name.indexOf('.sxg') >= 0)
-          log('Prefetched ' + e.name);
-      }
-    }).observe({ entryTypes: ['resource'] });
-  }
-
   </script>
-
     <div class="sxg">
       <input type="button" onclick="addPrefetch(this)" value="prefetch">
-      <a href="https://htxg-b1.appspot.com/sxg/amptest_with_js_preload.sxg">link</a>
+      <a href="https://sxg-demo.horo.jp/amptest/amptest.html">link</a>
     </div>
-
-<div id="disp"></div>
 </body>
