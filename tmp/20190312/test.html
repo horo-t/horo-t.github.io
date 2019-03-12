@@ -1,0 +1,15 @@
+<title>test</title>
+<script src="v0.js"></script>
+<script>
+  function addiframe() {
+    const i = document.createElement('iframe');
+    i.src = location.href + '?' + Math.random();
+    const div = document.createElement('div');
+    div.appendChild(i);
+    document.body.appendChild(div);
+  }
+</script>
+<body>
+<img src="blue.png">
+<input type="button" onclick="addiframe()" value="Click this">
+</body>
