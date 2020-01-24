@@ -1,0 +1,9 @@
+<h1>main</h1>
+<script>
+var iframe = document.createElement('iframe');
+document.body.appendChild(iframe);
+var doc = iframe.contentWindow.document;
+doc.open();
+doc.write('<h2>iframe</h2>');
+doc.close();
+</script>
