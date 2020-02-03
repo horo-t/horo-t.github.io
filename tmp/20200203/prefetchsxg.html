@@ -21,6 +21,7 @@
     log('-- addPrefetch --');
     let link = document.createElement('link');
     link.rel = 'prefetch';
+    link.as = 'document';
     link.href = url;
     document.body.appendChild(link);
   }
