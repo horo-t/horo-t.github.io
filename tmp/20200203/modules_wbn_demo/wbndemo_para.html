@@ -1,0 +1,16 @@
+<script>
+var link;
+function add_link_run_app() {
+  link = document.createElement('link');
+  link.rel = 'webbundle';
+  link.href = './three.js.wbn';
+  link.scope = 'https://three.js/';
+  document.body.appendChild(link);
+  import('./wbn_app.js').then(module => {
+    module.run(document.getElementById('container'));
+  });
+}
+</script>
+<input type="button" onclick="add_link_run_app()" value="add_link_run_app">
+
+<div id="container"></div>
