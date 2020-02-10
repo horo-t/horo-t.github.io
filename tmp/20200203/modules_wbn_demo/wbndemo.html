@@ -11,7 +11,8 @@ function run_app() {
   let t = window.performance.now();
   import('./wbn_app.js').then(module => {
     let elapsed = window.performance.now() - t;
-    document.getElementById('message').innerText = "import('./app.js') took " + elapsed + ' ms';
+    document.getElementById('message').innerText =
+        "import('./app.js') took " + elapsed + ' ms';
     module.run(document.getElementById('container'));
   });
 }
