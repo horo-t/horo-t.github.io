@@ -13,7 +13,7 @@ export function run(container) {
   scene.add(mesh);
 
   let renderer = new THREE.WebGLRenderer();
-  renderer.setSize(500, 500);
+  renderer.setSize(150, 150);
 
   container.appendChild(renderer.domElement);
 
