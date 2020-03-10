@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<meta charset="UTF-8">
+<title>How to know file path</title>
+<body>
+<script>
+function addLog(txt) {
+  const pre = document.createElement('pre');
+  pre.appendChild(document.createTextNode(txt));
+  document.body.appendChild(pre);
+}
+function trace() {
+  try {
+    throw new Error('error');
+  }
+  catch(e) {
+    addLog('-- Error Stack ---\n');
+    addLog(e.stack);
+  }
+}
+function observeSyncXHR() {
+  const observer = new ReportingObserver(function(reports, observer) {
+      addLog('-- ReportingObserver with sync XHR --');
+      addLog(JSON.stringify(reports, null, 2))
+      observer.disconnect();
+    }, {
+      buffered: true
+    });
+  observer.observe();
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "aa", false);
+  xhr.send();
+}
+
+addLog('-- window.location ---\n');
+addLog(window.location);
+addLog('-- document.location ---\n');
+addLog(document.location);
+addLog('-- document.URL ---\n');
+addLog(document.URL);
+trace();
+observeSyncXHR();
+</script>
