@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--  Subresource prefetching+loading via Signed HTTP Exchange  until Jul 15, 2020-->
+<meta http-equiv="origin-trial" content="Ao3cHv26uJbtz3pxOj+95SMn3M3VNJN0i3A7zcXyVbcgl+NRZ3C1HGyw/nB0mUeGRtau1jAHjnRkA/RgZcXjHg4AAABreyJvcmlnaW4iOiJodHRwczovL2hvcm8tdC5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IlNpZ25lZEV4Y2hhbmdlU3VicmVzb3VyY2VQcmVmZXRjaCIsImV4cGlyeSI6MTU5NDc5MTAwMn0=">
+</head>
+<body>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const url = new URLSearchParams(window.location.search).get('url')
+      if (!url) {
+        return;
+      }
+      const div = document.createElement('div');
+      const button = document.createElement('button');
+      button.appendChild(document.createTextNode('prefetch'));
+      button.addEventListener('click', () => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = url;
+        link.as = 'document';
+        document.body.appendChild(link);
+      }, false);
+      const aLink = document.createElement('a');
+      aLink.appendChild(document.createTextNode('link'));
+      aLink.href = 'link';
+      div.appendChild(button);
+      div.appendChild(aLink);
+      document.body.appendChild(div);
+    }, false);
+  </script>
+</body>
