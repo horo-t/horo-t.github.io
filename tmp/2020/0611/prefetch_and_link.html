@@ -12,25 +12,29 @@
         return;
       }
       const div = document.createElement('div');
-      const buttonDiv = document.createElement('div');
-      const button = document.createElement('button');
-      button.appendChild(document.createTextNode('prefetch'));
-      button.style = 'width: 100%; font-size: x-large; height: 50px;';
-      button.addEventListener('click', () => {
-        const link = document.createElement('link');
-        link.rel = 'prefetch';
-        link.href = url;
-        link.as = 'document';
-        document.body.appendChild(link);
-      }, false);
+
+      if (!new URLSearchParams(window.location.search).get('noprefetch')) {
+        const buttonDiv = document.createElement('div');
+        const button = document.createElement('button');
+        button.appendChild(document.createTextNode('prefetch'));
+        button.style = 'width: 100%; font-size: x-large; height: 50px;';
+        button.addEventListener('click', () => {
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = url;
+          link.as = 'document';
+          document.body.appendChild(link);
+        }, false);
+        buttonDiv.appendChild(button);
+        div.appendChild(buttonDiv);
+      }
+
       const aLinkDiv = document.createElement('div');
       const aLink = document.createElement('a');
       aLink.appendChild(document.createTextNode('link'));
       aLink.style = 'font-size: x-large;';
       aLink.href = url;
-      buttonDiv.appendChild(button);
       aLinkDiv.appendChild(aLink);
-      div.appendChild(buttonDiv);
       div.appendChild(aLinkDiv);
       document.body.appendChild(div);
     }, false);
