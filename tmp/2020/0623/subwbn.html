@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+  var link;
+  function add_link() {
+    link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = './test.wbn?foo=bar';
+    link.scope = 'https://example.com/';
+    document.body.appendChild(link);
+  }
+  function run_script() {
+    const s = document.createElement('script');
+    s.src = 'https://example.com/script.js';
+    document.body.appendChild(s);
+  }
+</script>
+<input type="button" onclick="add_link()" value="add_link">
+<input type="button" onclick="run_script()" value="run_script">
+<input type="button" onclick="add_link();run_script();" value="add_link and run_script">
