@@ -4,25 +4,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <script>
-  function add_link() {
+  function run() {
+    const wbn_path = 'test.wbn?foo=bar';
+    const wbn_url = new URL(wbn_path, location.href);
+
     const link = document.createElement('link');
     link.rel = 'webbundle';
-    link.href = './test.wbn?foo=bar';
+    link.href = wbn_path;
     document.body.appendChild(link);
-  }
-  function run_script() {
-    const s = document.createElement('script');
 
-    const wbn_url = new URL('./test.wbn?foo=bar', location.href).href;
-    s.src =
+    const script = document.createElement('script');
+    const script_url =
       'package:' +
-      wbn_url.replace(/\//g, ',').replace(/\?/g, ';') +
+      wbn_url.href.replace(/\//g, ',').replace(/\?/g, ';') +
       '$' +
-      'urn:uuid:2ff23a88-87ce-4631-afec-e858a02b2063'.replace(/\//g, ',');
-
-    document.body.appendChild(s);
+      'urn:uuid:2ff23a88-87ce-4631-afec-e858a02b2063';
+    console.log('Loading script "' + script_url + '"');
+    script.src = script_url;
+    document.body.appendChild(script);
   }
 </script>
-<input type="button" onclick="add_link()" value="add_link">
-<input type="button" onclick="run_script()" value="run_script">
-<input type="button" onclick="add_link();run_script();" value="add_link and run_script">
+<div><input type="button" onclick="run()" value="run"></div>
