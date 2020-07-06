@@ -1,0 +1,25 @@
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+function run() {
+    const wbn_path = 'test.wbn';
+    const wbn_url = new URL(wbn_path, location.href);
+
+    const link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = wbn_path;
+    document.body.appendChild(link);
+
+    const script = document.createElement('script');
+    const script_url =
+      'package:' +
+      wbn_url.href.replace(/\//g, ',').replace(/\?/g, ';') +
+      '$' +
+      'urn:uuid:df52cdd2-e054-49bf-b274-ee5114c2da88';
+    console.log('Loading script  + script_url + ');
+    script.src = script_url;
+    document.body.appendChild(script);
+  }
+</script>
+<div><input type="button" onclick="run()" value="run"></div>
