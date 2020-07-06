@@ -52,7 +52,7 @@ def start():
     "      wbn_url.href.replace(/\//g, ',').replace(/\?/g, ';') +",
     "      '$' +",
     "      '%s';" % scriptUrl,
-    "    console.log('Loading script "' + script_url + '"');",
+    "    console.log('Loading script ' + script_url);",
     "    script.src = script_url;",
     "    document.body.appendChild(script);",
     "  }",
