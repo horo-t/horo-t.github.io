@@ -23,6 +23,7 @@ def start():
     "-certificate", certFile,
     "-privateKey", privateKeyFile,
     "-certUrl", certUrl,
+    "-expire", "168h0m0s",
     "-o", "-"],
     stdout=subprocess.PIPE)
   sxg = base64.b64encode(p.stdout).decode('utf-8')
