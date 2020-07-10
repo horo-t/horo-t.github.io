@@ -1,0 +1,19 @@
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+
+<body>
+  <script>
+    function addIframe(sub) {
+      const i = document.createElement('iframe');
+      i.src = 'https://' + sub + '.safeframe.googlesyndication.com/safeframe/1-0-37/html/container.html';
+      document.body.appendChild(i);
+    }
+  </script>
+  <div>
+    <button onclick="addIframe('a')">a</button>
+    <button onclick="addIframe('b')">b</button>
+    <button onclick="addIframe('c')">c</button>
+    <button onclick="addIframe('d')">d</button>
+  </div>
+</body>
