@@ -1,0 +1,21 @@
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+function run() {
+    const wbn_path = 'test.wbn';
+    const script_url = 'https://sxg-demo.horo.jp/load_iframe.js';
+
+    const link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = wbn_path;
+    link.resources = script_url;
+    document.body.appendChild(link);
+
+    const script = document.createElement('script');
+    console.log('Loading script ' + script_url);
+    script.src = script_url;
+    document.body.appendChild(script);
+  }
+</script>
+<div><input type="button" onclick="run()" value="run"></div>
