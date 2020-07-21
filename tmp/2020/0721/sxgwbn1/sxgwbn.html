@@ -9,7 +9,7 @@ function log(txt) {
 }
 function run() {
     window.time_1 = performance.now();
-    const wbn_path = 'test.wbn';
+    const wbn_path = 'test.wbn?' + Math.random();
     const script_url = 'https://sxg-demo.horo.jp/load_iframe.js';
 
     const link = document.createElement('link');

@@ -57,7 +57,7 @@ def start():
     "}",
     "function run() {",
     "    window.time_1 = performance.now();",
-    "    const wbn_path = 'test.wbn';",
+    "    const wbn_path = 'test.wbn?' + Math.random();",
     "    const script_url = '%s';" % scriptUrl,
     "",
     "    const link = document.createElement('link');",
