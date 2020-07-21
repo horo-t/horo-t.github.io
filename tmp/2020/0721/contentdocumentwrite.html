@@ -1,0 +1,17 @@
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+  function run() {
+    (() => {
+      const i = document.createElement('iframe');
+      document.body.appendChild(i);
+      fetch('before contentDocument.write');
+      i.contentDocument.write('<script src="script.js"><' + '/script>');
+      fetch('after contentDocument.write');
+      i.contentDocument.close();
+      fetch('after contentDocument.close');
+    })()
+  }
+</script>
+<div><input type="button" onclick="run()" value="run"></div>

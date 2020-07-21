@@ -1,0 +1,38 @@
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+function log(txt) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(txt));
+  document.body.appendChild(div);
+}
+function run() {
+    window.time_1 = performance.now();
+    const wbn_path = 'test.wbn';
+    const script_url = 'https://sxg-demo.horo.jp/load_iframe.js';
+
+    const link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = wbn_path;
+    link.resources = script_url;
+    document.body.appendChild(link);
+
+    window.iframe_for_test = new Promise((resolve) => {
+      setTimeout(() => {
+        window.time_x1 = performance.now();
+        const i = document.createElement('iframe');
+        i.width = 300;
+        i.height = 250;
+        document.body.appendChild(i);
+        window.time_x2 = performance.now();
+        resolve(i);      }, 1)
+    });
+
+    const script = document.createElement('script');
+    console.log('Loading script ' + script_url);
+    script.src = script_url;
+    document.body.appendChild(script);
+  }
+</script>
+<div><input type="button" onclick="run()" value="run"></div>
