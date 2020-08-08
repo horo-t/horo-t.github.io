@@ -1,0 +1,14 @@
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+  async function run() {
+    const iframe = document.createElement('iframe');
+    iframe.width = 300;
+    iframe.height = 250;
+    const txt = await (await fetch('inabox-creative.html')).text();
+    iframe.src = 'data:text/html;base64,' + btoa(txt);
+    document.body.appendChild(iframe);
+  }
+</script>
+<div><input type="button" onclick="run()" value="run"></div>
