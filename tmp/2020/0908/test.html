@@ -1,0 +1,66 @@
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<script>
+  function getScriptUrl(index) {
+    const index_str = ('' + (index + 1)).padStart(2, '0');
+    return 'https://horo-t.github.io/' + index_str + '.js';
+  }
+  function getWbnUrl(index) {
+    const index_str = ('' + (index + 1)).padStart(2, '0');
+    const wbn_path = './out/' + index_str + '.wbn';
+    return new URL(wbn_path, location.href);
+  }
+  async function test(index) {
+    const wbn_url = getWbnUrl(index);
+    const script_url = getScriptUrl(index);
+
+    const link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = wbn_url;
+    link.resources = script_url;
+    document.body.appendChild(link);
+
+    const msgPromise = new Promise((resolve) => {
+      const listener = (e) => {
+        console.log(e.data);
+        if (e.data == 'inabox-ad') {
+          window.removeEventListener('message', listener);
+          resolve();
+        }
+      };
+      window.addEventListener('message', listener);
+    });
+
+    const script = document.createElement('script');
+    script.src = script_url;
+    document.body.appendChild(script);
+
+    await msgPromise;
+  }
+
+  function cleanup(index) {
+    const wbn_url = getWbnUrl(index);
+    const script_url = getScriptUrl(index);
+    document.body.querySelectorAll("iframe").forEach((iframe) => {
+      document.body.removeChild(iframe);
+    });
+    document.body.querySelectorAll("link").forEach((link) => {
+      if (link.href == wbn_url)
+        document.body.removeChild(link);
+    });
+    document.body.querySelectorAll("script").forEach((script) => {
+      if (script.src == script_url)
+        document.body.removeChild(script);
+    });
+  }
+
+  async function run() {
+    for (let i = 0; i < 10; ++i) {
+      await test(i);
+      cleanup(i);
+      await new Promise(resolve => { setTimeout(resolve, 1000); });
+    }
+  }
+</script>
+<div><input type="button" onclick="run()" value="run"></div>

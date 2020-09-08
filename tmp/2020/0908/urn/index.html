@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<body>
+  <script>
+    const link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = 'out.wbn';
+    link.resources.add('http://localhost:8080/script.js');
+    link.resources.add('urn:uuid:9f117f29-fb82-4b0e-9e69-cbf39cea3244');
+    document.body.appendChild(link);
+    const s = document.createElement('script');
+    s.src = 'http://localhost:8080/script.js';
+    document.body.appendChild(s);
+  </script>
+</body>
