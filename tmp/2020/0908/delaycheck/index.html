@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<body>
+  <script>
+    const startTime = performance.now();
+    fetch('./fetchdata?' + Math.random());
+    function addScript(file) {
+      const s = document.createElement('script');
+      s.src = file + '.js?' + Math.random();
+      document.body.appendChild(s);
+    }
+    for (let i = 0; i < 10; ++i) {
+      addScript(i);
+    }
+    addScript("main");
+  </script>
+</body>
