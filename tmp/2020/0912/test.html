@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<body>
+  <script>
+    const link = document.createElement('link');
+    link.rel = 'webbundle';
+    link.href = 'test.wbn';
+    link.resources.add('https://horo-t.github.io/tmp/2020/0912/script.js');
+    document.body.appendChild(link);
+    const s = document.createElement('script');
+    s.src = 'https://horo-t.github.io/tmp/2020/0912/script.js';
+    document.body.appendChild(s);
+  </script>
+</body>
