@@ -355,6 +355,9 @@
       files.forEach((path) => {
         link.resources.add(base_url + path);
       });
+    } else if (link.scope !== undefined) {
+      // Historically "scope" was used in explainer and demo code.
+      link.scope = base_url;
     } else {
       document.getElementById('message').innerText =
         "Please run Chrome with --enable-features=SubresourceWebBundles flag";
