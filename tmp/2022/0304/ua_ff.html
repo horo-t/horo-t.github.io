@@ -1,0 +1,34 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <div>
+    <pre id="disp"></pre>
+  </div>
+  <script>
+    function log(txt) {
+      const disp = document.getElementById("disp");
+      disp.appendChild(
+        document.createTextNode(
+          Math.round(performance.now()) + ": " + txt + "\n"
+        )
+      );
+    }
+    log(navigator.userAgent);
+    function addFrame(type) {
+      const frame = document.createElement(type);
+      frame.src = 'https://mparch.glitch.me/ua.html';
+      document.body.appendChild(frame);
+    }
+  </script>
+  <div>
+    <button onclick="addFrame('iframe');">
+      Add iframe
+    </button>
+  </div>
+  <div>
+    <button onclick="addFrame('fencedframe');">
+      Add Fenced Frame
+    </button>
+  </div>
+</body>
